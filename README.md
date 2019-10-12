@@ -1,2 +1,2 @@
-# rsna
+# RSNA
 Kaggle RSNA
