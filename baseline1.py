@@ -40,13 +40,13 @@ def data_target(dir, label):
     target = []
     for file in cv.list_files(dir):
         file_name = dir + file
-        contour = process_file(file_name) # method snake
+        #contour = process_file(file_name) # method snake
 
         image = lib.read_image(file_name) # feature hematoma, utilize hu
-        #hematoma = lib.substance_interval(image, 40, 90)
+        hematoma = lib.substance_interval(image, 40, 90)
 
-        data.append(contour.flatten())
-        #data.append(hematoma.flatten())
+        #data.append(contour.flatten())
+        data.append(hematoma.flatten())
         #data.append(np.append(contour.flatten(),hematoma.flatten()))
         target.append(label)
         count += 1
@@ -56,12 +56,14 @@ def data_target(dir, label):
 
 
 #----------- Main
-dir_epidural = "//home/usuario/projetos/github/rsna/dataset/epidural/"
-dir_normal = "//home/usuario/projetos/github/rsna/dataset/normal/"
+#dir_epidural = "//home/usuario/projetos/github/rsna/dataset/epidural/"
+#dir_normal = "//home/usuario/projetos/github/rsna/dataset/normal/"
+dir_epidural ="//home/claudiovaliense/kaggle/rsna/epidural/"
+dir_normal ="//home/claudiovaliense/kaggle/rsna/normal/"
 k = 5 # k of knn classifier
 data = []
 target = []
-amount_files = 100
+amount_files = 10
 iterations = 35 # method snake
 
 datas, targets = data_target(dir_epidural, 'epidural')

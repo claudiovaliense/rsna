@@ -7,6 +7,7 @@ from skimage.segmentation import (morphological_chan_vese, morphological_geodesi
 from skimage.segmentation import (inverse_gaussian_gradient, checkerboard_level_set)
 from skimage import io  # Load image file
 from sklearn.neighbors import KNeighborsClassifier  # Classificador knn
+from sklearn import svm # Classificador SVN
 import claudio_funcoes as cv
 from sklearn.model_selection import train_test_split
 from sklearn import metrics  # Checar a acuracia
@@ -14,6 +15,8 @@ import lib
 import multiprocessing as mp  # Multiprocessing set train
 import threading  # Multiprocessing set train
 import queue
+import timeit  # calcular metrica de tempo
+
 
 
 # Method Snake
@@ -38,61 +41,65 @@ def process_file(filename):
     return evolution[-1]
 
 
-def processing_thread(file,label):
-    count = 0
-    file_name = dir + file
-    #contour = process_file(file_name)  # method snake
+def processing_thread(file_name, label):
+    contour = process_file(file_name)  # method snake
 
-    image = lib.read_image(file_name)  # feature hematoma, utilize hu
-    hematoma = lib.substance_interval(image, 40, 90)
+    #image = lib.read_image(file_name)  # feature hematoma, utilize hu
+    #hematoma = lib.substance_interval(image, 30, 90)
 
-    #data.append(contour.flatten())
-    data.append(hematoma.flatten())
-    # data.append(np.append(contour.flatten(),hematoma.flatten()))
-    target.append(label)
+    # combined method
+    #return [hematoma.flatten()], [label]
+    #return [np.append(contour.flatten(), hematoma.flatten())], [label]
+    return [contour.flatten()], [label]
 
-    return [data, target]
-
-    '''count += 1
-    if count == amount_files:
-        break
-    '''
 
 def data_target(dir, label):
     """Process data and attribuited label"""
     count = 0
     data = []
+    data_geral = []
     target = []
+    target_geral = []
+    n_cores = mp.cpu_count()
 
     que = queue.Queue()
     threads_list = list()
 
-    for file in cv.list_files(dir):
-        for i in range(mp.cpu_count()):
-            t = threading.Thread(target=lambda q, arg1: q.put(processing_thread(arg1)), args=(que, file,label))
-            t.start()
-            threads_list.append(t)
+    files = cv.list_files(dir)
+    size_files = len(files)
+    size_files = amount_files
+    for a in range(size_files):
+        for i in range(n_cores):
+            if(count<size_files):
+                t = threading.Thread(target=lambda q, arg1, arg2: q.put(processing_thread(arg1, arg2)), args=(que, dir+files[count], label))
+                count += 1
+                t.start()
+                threads_list.append(t)
+            else:
+                break
 
-    # Join all the threads
-    for t in threads_list:
-        t.join()
-
-    list_geral = []
-    # Check thread's return value
-    while not que.empty():
-        result = que.get()
-        list_geral.append(result)
+        # Join all the threads
+        for t in threads_list:
+            t.join()
 
 
-return [data, target]
+        # Check thread's return value
+        while not que.empty():
+            data, target = que.get()
+            data_geral.append(data[0])
+            target_geral.append(target[0])
+
+    return [data_geral,target_geral]
 
 # ----------- Main
-dir_epidural = "//home/usuario/projetos/github/rsna/dataset/epidural/"
-dir_normal = "//home/usuario/projetos/github/rsna/dataset/normal/"
-k = 5  # k of knn classifier
+#dir_epidural = "//home/usuario/projetos/github/rsna/dataset/epidural/"
+#dir_normal = "//home/usuario/projetos/github/rsna/dataset/normal/"
+dir_epidural ="//home/claudiovaliense/kaggle/rsna/epidural/"
+dir_normal ="//home/claudiovaliense/kaggle/rsna/normal/"
+k = 10  # k of knn classifier
 data = []
 target = []
-amount_files = 100
+amount_files = 200
 iterations = 35  # method snake
 
 datas, targets = data_target(dir_epidural, 'epidural')
@@ -111,10 +118,17 @@ X = np.array(data)
 print("Data matrix size : {:.2f}MB".format(X.nbytes / (1024 * 1000.0)))
 X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=cv.AMOUNT_TEST, random_state=cv.SEED_RANDOM)
 
-model = KNeighborsClassifier(n_neighbors=k)
+#model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
+#print('k: ', k)
+
+model = svm.SVC(kernel='rbf', gamma='scale')
+
+print("Train model")
+ini = timeit.default_timer()
 model.fit(X_train, y_train)
+print("Time train model: %f" % (timeit.default_timer() - ini))
 
 y_pred = model.predict(X_test)
 accuracy = metrics.accuracy_score(y_test, y_pred)
-print('k: ', k)
+
 print('Accuracy: ', accuracy)
