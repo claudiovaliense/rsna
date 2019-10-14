@@ -1,5 +1,5 @@
 """
-Author: Claudio Moises Valiense de Andrade
+Author: Claudio Moises Valiense de Andrade and NAMES PEOPLE GROUP RSNA UFF
 Code objective: Kaggle Competition RSNA
 """
 import numpy as np
@@ -10,6 +10,7 @@ from sklearn.neighbors import KNeighborsClassifier  # Classificador knn
 import claudio_funcoes as cv
 from sklearn.model_selection import train_test_split
 from sklearn import metrics  # Checar a acuracia
+import lib
 
 # Method Snake
 def store_evolution_in(lst):
@@ -39,8 +40,14 @@ def data_target(dir, label):
     target = []
     for file in cv.list_files(dir):
         file_name = dir + file
-        contour = process_file(file_name)
+        contour = process_file(file_name) # method snake
+
+        image = lib.read_image(file_name) # feature hematoma, utilize hu
+        #hematoma = lib.substance_interval(image, 40, 90)
+
         data.append(contour.flatten())
+        #data.append(hematoma.flatten())
+        #data.append(np.append(contour.flatten(),hematoma.flatten()))
         target.append(label)
         count += 1
         if count == amount_files:
@@ -49,12 +56,12 @@ def data_target(dir, label):
 
 
 #----------- Main
-dir_epidural = "//home/usuario/Projetos/dataset/epidural/"
-dir_normal = "//home/usuario/Projetos/dataset/normal/"
-k = 1 # k of knn classifier
+dir_epidural = "//home/usuario/projetos/github/rsna/dataset/epidural/"
+dir_normal = "//home/usuario/projetos/github/rsna/dataset/normal/"
+k = 5 # k of knn classifier
 data = []
 target = []
-amount_files = 5
+amount_files = 100
 iterations = 35 # method snake
 
 datas, targets = data_target(dir_epidural, 'epidural')
