@@ -1,0 +1,8 @@
+Data matrix size : 51.20MB
+Accuracy:  0.6
+Data matrix size : 51.20MB
+k:  10
+Accuracy:  0.525
+Data matrix size : 512.00MB
+k:  5
+Accuracy:  0.65
