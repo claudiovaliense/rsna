@@ -7,7 +7,7 @@ from skimage.segmentation import (morphological_chan_vese, morphological_geodesi
 from skimage.segmentation import (inverse_gaussian_gradient, checkerboard_level_set)
 from skimage import io  # Load image file
 from sklearn.neighbors import KNeighborsClassifier  # Classificador knn
-from sklearn import svm # Classificador SVN
+from sklearn import svm  # Classificador SVN
 import claudio_funcoes as cv
 from sklearn.model_selection import train_test_split
 from sklearn import metrics  # Checar a acuracia
@@ -16,7 +16,13 @@ import multiprocessing as mp  # Multiprocessing set train
 import threading  # Multiprocessing set train
 import queue
 import timeit  # calcular metrica de tempo
+import sklearn.preprocessing as pre # utiliza normalize
+from skimage.filters import threshold_multiotsu
 
+
+
+AMOUNT_TEST = 0.2
+SEED_RANDOM = 4
 
 
 # Method Snake
@@ -41,16 +47,56 @@ def process_file(filename):
     return evolution[-1]
 
 
-def processing_thread(file_name, label):
-    contour = process_file(file_name)  # method snake
+def processing_thread(dir, files, label, id_core):
+    features = []
+    labels = []
+    for file_name in files:
+        norm = 'max'
+        image = lib.read_image(dir + file_name)  # feature hematoma, utilize hu
+        # features
+        snake = process_file(dir + file_name)  # method snake
+        hematoma = pre.normalize(lib.substance_interval(image, 30, 90), norm=norm)
+        #ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm)
+        white_matter = pre.normalize(lib.substance_interval(image, 20, 30), norm=norm)
 
-    #image = lib.read_image(file_name)  # feature hematoma, utilize hu
-    #hematoma = lib.substance_interval(image, 30, 90)
+        #hematoma =lib.substance_interval(image, 30, 90)
+        #white_matter = lib.substance_interval(image, 20, 30)
+
+
+
+
+        # resultado ruim se adicionar. Teste em 80 imagens
+        #bone =  pre.normalize(lib.substance_interval(image, 700, 3000), norm=norm)
+        #blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm)
+        '''print("aqui1")
+          multiotsu = threshold_multiotsu(image, classes=5) # melhora com o aumento de classe, mas piorou ao adicionar outras features
+          print("aqui")
+          regions_multi = pre.normalize(np.digitize(image, bins=multiotsu), norm=norm)
+
+          colorized, otsu, thresholds = lib.multiotsu(image, 3)
+          mask_ossos = np.zeros((512, 512))
+          mask_ossos[otsu == 2] = 1
+          ossos = image * mask_ossos
+          ossos = pre.normalize(ossos, norm=norm)'''
+
+
+        #con_hem = np.append(snake,hematoma)
+        #con_hem =  np.append(con_hem,white_matter)
+        con_hem = snake + hematoma + white_matter
+        #con_hem = pre.normalize(con_hem, norm=norm) # Ruim normalizar no final
+
+
+        features.append(con_hem.flatten())
+        #features.append(con_hem)
+        labels.append(label)
+        cv.calculate_process(amount_files*2)
+
+    return id_core, features, labels
 
     # combined method
-    #return [hematoma.flatten()], [label]
-    #return [np.append(contour.flatten(), hematoma.flatten())], [label]
-    return [contour.flatten()], [label]
+    # return [hematoma.flatten()], [label]
+    # return [np.append(contour.flatten(), hematoma.flatten())], [label]
+
 
 
 def data_target(dir, label):
@@ -66,40 +112,45 @@ def data_target(dir, label):
     threads_list = list()
 
     files = cv.list_files(dir)
-    size_files = len(files)
-    size_files = amount_files
-    for a in range(size_files):
-        for i in range(n_cores):
-            if(count<size_files):
-                t = threading.Thread(target=lambda q, arg1, arg2: q.put(processing_thread(arg1, arg2)), args=(que, dir+files[count], label))
-                count += 1
-                t.start()
-                threads_list.append(t)
-            else:
-                break
+    files = files[0:amount_files]
+    files = cv.n_list(files, n_cores)
 
-        # Join all the threads
-        for t in threads_list:
-            t.join()
+    for id_core in range(n_cores):
+        t = threading.Thread(target=lambda q, dir, arg1, arg2, arg3: q.put(processing_thread(dir, arg1, arg2, arg3)),
+                             args=(que, dir, files[id_core], label, id_core))
+        t.start()
+        threads_list.append(t)
 
+    # Join all the threads
+    for t in threads_list:
+        t.join()
 
-        # Check thread's return value
-        while not que.empty():
-            data, target = que.get()
-            data_geral.append(data[0])
-            target_geral.append(target[0])
+    return_cores = dict()
+    # Check thread's return value
+    while not que.empty():
+        id_core, datas, targets = que.get()
+        return_cores[id_core] = datas, targets
 
-    return [data_geral,target_geral]
+    # Ordenar na mesma ordem que pegou os arquivos
+    for id in range(n_cores):
+        datas, targets = return_cores[id]
+        for data in datas:
+            data_geral.append(data)
+        for target in targets:
+            target_geral.append(target)
+
+    return [data_geral, target_geral]
+
 
 # ----------- Main
-#dir_epidural = "//home/usuario/projetos/github/rsna/dataset/epidural/"
-#dir_normal = "//home/usuario/projetos/github/rsna/dataset/normal/"
-dir_epidural ="//home/claudiovaliense/kaggle/rsna/epidural/"
-dir_normal ="//home/claudiovaliense/kaggle/rsna/normal/"
-k = 10  # k of knn classifier
+dir_epidural = "//home/usuario/projetos/github/rsna/dataset/epidural/"
+dir_normal = "//home/usuario/projetos/github/rsna/dataset/normal/"
+# dir_epidural ="//home/claudiovaliense/kaggle/rsna/epidural/"
+# dir_normal ="//home/claudiovaliense/kaggle/rsna/normal/"
+k = 3  # k of knn classifier
 data = []
 target = []
-amount_files = 200
+amount_files = 10
 iterations = 35  # method snake
 
 datas, targets = data_target(dir_epidural, 'epidural')
@@ -116,15 +167,18 @@ for t in targets:
 
 X = np.array(data)
 print("Data matrix size : {:.2f}MB".format(X.nbytes / (1024 * 1000.0)))
-X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=cv.AMOUNT_TEST, random_state=cv.SEED_RANDOM)
+X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
 
-#model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
-#print('k: ', k)
+model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
+# print('k: ', k)
 
-model = svm.SVC(kernel='rbf', gamma='scale')
+#model = svm.SVC(kernel='rbf', gamma='scale')
 
 print("Train model")
 ini = timeit.default_timer()
+
+
+
 model.fit(X_train, y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 

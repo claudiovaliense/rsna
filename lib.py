@@ -1,6 +1,8 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import pydicom
+from skimage.filters import threshold_multiotsu
+from skimage.color import label2rgb
 
 
 def read_image(filename):
@@ -36,3 +38,13 @@ def histogram(image, remove_min=False):
     plt.hist(image.ravel(), 256, [min, max])
     plt.title("histogram")
     plt.show()
+
+def normalize(image, min, max):
+    image = abs(image - min) / abs(max - min)
+    return image
+
+def multiotsu(image, regions):
+    thresholds = threshold_multiotsu(image, classes=regions)
+    regions = np.digitize(image, bins=thresholds)
+    regions_colorized = label2rgb(regions)
+    return (regions_colorized, regions, thresholds)

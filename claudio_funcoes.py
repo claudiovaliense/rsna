@@ -13,9 +13,6 @@ from datetime import datetime  # Datetime for time in file
 from heapq import nlargest  # Order vector
 import json  # Manipulate extension json
 
-AMOUNT_TEST=0.2
-SEED_RANDOM=4
-
 
 def selecionar_ids_arquivo(file_ids_total, files_ids_selecionados):
     """
@@ -49,11 +46,25 @@ def arquivo_para_corpus(file_corpus, id_column):
             corpus.append(row[id_column])
     return corpus
 
-def arquivo_para_corpus_space(file_corpus):
+def arquivo_para_corpus_separate_vir(file_corpus, id_column=int):
     """ Transforma o arquivo .csv no formato 'list' compatível para o tfidf."""
     corpus = []
     with open(file_corpus, 'r', newline='') as out:
-        csv_reader = csv.reader(out, delimiter=' ')
+        csv_reader = csv.reader(out, delimiter=',')
+        # next(csv_reader)  # Pular cabecalho
+        for row in csv_reader:
+            #corpus.append(filter(lambda x: x > id_column, row))
+            #lambda a,
+            row = row[1:]
+            row = ' '.join(row)
+            corpus.append(row)
+    return corpus
+
+def arquivo_para_corpus_delimiter(file_corpus, delimiter):
+    """ Transforma o arquivo .csv no formato 'list' compatível para o tfidf."""
+    corpus = []
+    with open(file_corpus, 'r', newline='') as out:
+        csv_reader = csv.reader(out, delimiter=delimiter)
         # next(csv_reader)  # Pular cabecalho
         for row in csv_reader:
             corpus.append(row)
@@ -91,23 +102,16 @@ def soma_das_frequencia2(listas):
     """ Soma as frequencias dos termos de uma lista de listas. """
     termos_unicos = {}
     for termo_freq in listas:
-        if termos_unicos.__contains__(termo_freq[0]) == True:
-            termos_unicos.__setitem__(termo_freq[0], termo_freq[1] + termos_unicos.__getitem__(
-                termo_freq[0]))  # Valor atual + anterior
+        if termo_freq[0] in termos_unicos:
+            termos_unicos[termo_freq[0]] += termo_freq[1] # Valor atual + anterior
         else:
-            termos_unicos.__setitem__(termo_freq[0], termo_freq[1])
+            termos_unicos[termo_freq[0]] = termo_freq[1]
     return sorted(termos_unicos.items(), key=lambda e: (-e[1], e[0]))
 
 
-def coloca_espaco_vetor(lista):
+def space_list(lista):
     """ Coloca espaço entre os elementos da lista."""
-    txt = ""
-    for i in range(lista.__len__()):
-        if i == lista.__len__() - 1:
-            txt = txt + lista[i]
-        else:
-            txt = txt + lista[i] + " "
-    return txt
+    return " ".join(lista)
 
 
 def indice_maior_element_numpy(vet_numpy):
@@ -121,9 +125,9 @@ def indice_maior_element_numpy(vet_numpy):
 
 def save_model_lda(corpus, file_lda):
     """ Salvar modelo LDA em arquivo."""
-
+    print('LDA')
     vectorizer = TfidfVectorizer()  # Utilizar o metodo tfidf
-    lda = LatentDirichletAllocation(n_components=5, random_state=0)  # Utilizar 5 topicos
+    lda = LatentDirichletAllocation(n_components=10, random_state=0, n_jobs=-1)  # Utilizar 5 topicos
     ini = timeit.default_timer()
     X = vectorizer.fit_transform(corpus)  # Transformar texto em matrix
     # X_TF = vectorizer.fit_transform(corpus).tocsr()
@@ -138,18 +142,6 @@ def save_model_lda(corpus, file_lda):
         pickle.dump(model, fp)
 
 
-def k_elements_list(lista, k):
-    """ Retorna uma lista com k primeiros elementos."""
-    new_lista = []
-    i = 1
-    for e in lista:
-        new_lista.append(e)
-        if (i == k):
-            break
-        i += 1
-    return new_lista
-
-
 def save_one_column_csv(file_csv, id_column):
     """ Save one column csv. """
     with open(name_out(file_csv), 'w', newline='') as csv_write:
@@ -157,7 +149,7 @@ def save_one_column_csv(file_csv, id_column):
         with open(file_csv, newline='') as csv_reader:
             rows = csv.reader(csv_reader)
             for row in rows:
-                rows_out.writerow([row[id_column - 1]])
+                rows_out.writerow([row[id_column]])
 
 
 def name_out(file_csv):
@@ -229,7 +221,27 @@ def k_max_index(list, k):
     """''
     list_m = list.copy()
     max_index = []
-    k_max = nlargest(k, list_m)
+    k_max_values = nlargest(k, list_m)
+    for k_value in k_max_values:
+        index_k = list_m.index(k_value)
+        max_index.append(index_k)
+        list_m[index_k] = -1
+    return max_index
+
+def k_max_index_list2(list, k):
+    """ Return index of max values.
+    Example:
+    r = [0.5, 0.7, 0.3, 0.3, 0.3, 0.4, 0.5]
+    print(k_max_index(r, 3))
+    """''
+    list_m = list.copy()
+    numbers = []
+    keywords_fin = []
+    for i in range(len(list_m)):
+        numbers.append(list_m[i][1])
+    max_index = []
+    k_max = nlargest(k, numbers)
+
     for i in k_max:
         max_index.append(list_m.index(i))
         list_m[list_m.index(i)] = -1
@@ -268,7 +280,39 @@ def list_files(dir):
             files_name.append(f)
     return files_name
 
-r = [0, 7, 0, 3, 0, 1, 0]
-r2 = [0, 7, 0, 3, 0, 2, 1]
+def remove_duplicate(mylist):
+    """Remve itens duplicate in list."""
+    return list(dict.fromkeys(mylist))
+
+def n_list(list, n):
+    """Split list in n lists"""
+    return numpy.array_split(list, n)
+
+def time_function(fun, params):
+    """Calculate time function"""
+    #  time_function(name_function, [params..]
+    amount_param = len(list(params))
+
+    ini = timeit.default_timer()
+    if (amount_param == 0):
+        result = fun()
+    if (amount_param == 1):
+        result = fun(params[0])
+    if(amount_param == 2):
+        result = fun(params[0], params[1])
+    if (amount_param == 3):
+        result = fun(params[0], params[1], params[2])
+    if (amount_param == 4):
+        result = fun(params[0], params[1], params[2], params[3])
+    if (amount_param == 5):
+        result = fun(params[0], params[1], params[2], params[3], params[4])
+
+    print("Time execute function: %f" % (timeit.default_timer() - ini))
+    return result
 
 
+count_process = 0
+def calculate_process(size):
+    global count_process
+    count_process += 1
+    print("Process: ", count_process, "/", size, ", ", (count_process/size)*100," %")
