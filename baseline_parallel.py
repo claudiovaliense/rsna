@@ -18,6 +18,7 @@ import queue
 import timeit  # calcular metrica de tempo
 import sklearn.preprocessing as pre # utiliza normalize
 from skimage.filters import threshold_multiotsu
+from sklearn.ensemble import RandomForestClassifier
 
 
 
@@ -46,6 +47,21 @@ def process_file(filename):
     ls = morphological_chan_vese(image, iterations, init_level_set=init_ls, smoothing=1, iter_callback=callback)
     return evolution[-1]
 
+def snake_GAC(filename):
+    image = io.imread(filename)
+    gimage = inverse_gaussian_gradient(image)
+
+    # Initial level set
+    init_ls = np.zeros(image.shape, dtype=np.int8)
+    init_ls[10:-10, 10:-10] = 1
+    # List with intermediate results for plotting the evolution
+    evolution2 = []
+    callback = store_evolution_in(evolution2)
+    ls = morphological_geodesic_active_contour(gimage, iterations,
+                                               iter_callback=callback)
+    return evolution2[-1]
+
+
 
 def processing_thread(dir, files, label, id_core):
     features = []
@@ -56,7 +72,7 @@ def processing_thread(dir, files, label, id_core):
         # features
         snake = process_file(dir + file_name)  # method snake
         hematoma = pre.normalize(lib.substance_interval(image, 30, 90), norm=norm)
-        #ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm)
+
         white_matter = pre.normalize(lib.substance_interval(image, 20, 30), norm=norm)
 
         #hematoma =lib.substance_interval(image, 30, 90)
@@ -65,9 +81,13 @@ def processing_thread(dir, files, label, id_core):
 
 
 
+
         # resultado ruim se adicionar. Teste em 80 imagens
+        #ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm)
+        # snake_method2 = snake_GAC(dir + file_name)
         #bone =  pre.normalize(lib.substance_interval(image, 700, 3000), norm=norm)
         #blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm)
+
         '''print("aqui1")
           multiotsu = threshold_multiotsu(image, classes=5) # melhora com o aumento de classe, mas piorou ao adicionar outras features
           print("aqui")
@@ -150,7 +170,7 @@ dir_normal = "//home/usuario/projetos/github/rsna/dataset/normal/"
 k = 3  # k of knn classifier
 data = []
 target = []
-amount_files = 10
+amount_files = 40
 iterations = 35  # method snake
 
 datas, targets = data_target(dir_epidural, 'epidural')
@@ -170,9 +190,11 @@ print("Data matrix size : {:.2f}MB".format(X.nbytes / (1024 * 1000.0)))
 X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
 
 model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
+#model = RandomForestClassifier()
+#model = svm.SVC(kernel='rbf', gamma='scale')
 # print('k: ', k)
 
-#model = svm.SVC(kernel='rbf', gamma='scale')
+
 
 print("Train model")
 ini = timeit.default_timer()
