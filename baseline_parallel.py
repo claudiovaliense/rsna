@@ -72,28 +72,24 @@ def processing_thread(dir, files, label, id_core):
         # features
         snake = process_file(dir + file_name)  # method snake
         hematoma = pre.normalize(lib.substance_interval(image, 30, 90), norm=norm)
-
         white_matter = pre.normalize(lib.substance_interval(image, 20, 30), norm=norm)
+        ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm)
 
         #hematoma =lib.substance_interval(image, 30, 90)
         #white_matter = lib.substance_interval(image, 20, 30)
 
-
-
-
-
         # resultado ruim se adicionar. Teste em 80 imagens
-        #ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm)
-        # snake_method2 = snake_GAC(dir + file_name)
-        #bone =  pre.normalize(lib.substance_interval(image, 700, 3000), norm=norm)
-        #blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm)
 
-        '''print("aqui1")
-          multiotsu = threshold_multiotsu(image, classes=5) # melhora com o aumento de classe, mas piorou ao adicionar outras features
-          print("aqui")
-          regions_multi = pre.normalize(np.digitize(image, bins=multiotsu), norm=norm)
+       # snake_method2 = snake_GAC(dir + file_name)
+      	# bone =  pre.normalize(lib.substance_interval(image, 700, 3000), norm=norm)
+       	# blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm)
 
-          colorized, otsu, thresholds = lib.multiotsu(image, 3)
+        #print("aqui1")
+        #multiotsu = threshold_multiotsu(image, classes=5) # melhora com o aumento de classe, mas piorou ao adicionar outras features
+        #print("aqui")
+        #regions_multi = pre.normalize(np.digitize(image, bins=multiotsu), norm=norm)
+
+        '''  colorized, otsu, thresholds = lib.multiotsu(image, 3)
           mask_ossos = np.zeros((512, 512))
           mask_ossos[otsu == 2] = 1
           ossos = image * mask_ossos
@@ -102,7 +98,7 @@ def processing_thread(dir, files, label, id_core):
 
         #con_hem = np.append(snake,hematoma)
         #con_hem =  np.append(con_hem,white_matter)
-        con_hem = snake + hematoma + white_matter
+        con_hem = snake + hematoma + white_matter + ventriculo
         #con_hem = pre.normalize(con_hem, norm=norm) # Ruim normalizar no final
 
 
@@ -163,14 +159,14 @@ def data_target(dir, label):
 
 
 # ----------- Main
-dir_epidural = "//home/usuario/projetos/github/rsna/dataset/epidural/"
-dir_normal = "//home/usuario/projetos/github/rsna/dataset/normal/"
+dir_epidural = "../epidural/"
+dir_normal = "../normal/"
 # dir_epidural ="//home/claudiovaliense/kaggle/rsna/epidural/"
 # dir_normal ="//home/claudiovaliense/kaggle/rsna/normal/"
 k = 3  # k of knn classifier
 data = []
 target = []
-amount_files = 40
+amount_files = 300
 iterations = 35  # method snake
 
 datas, targets = data_target(dir_epidural, 'epidural')
