@@ -104,6 +104,7 @@ def processing_thread(dir, files, label, id_core):
 
         features.append(con_hem.flatten())
         #features.append(con_hem)
+        label = id_core % 5
         labels.append(label)
         cv.calculate_process(amount_files*2)
 
@@ -166,7 +167,7 @@ dir_normal = "../normal/"
 k = 3  # k of knn classifier
 data = []
 target = []
-amount_files = 300
+amount_files = 50
 iterations = 35  # method snake
 
 datas, targets = data_target(dir_epidural, 'epidural')
@@ -200,7 +201,12 @@ ini = timeit.default_timer()
 model.fit(X_train, y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
+y_prob = model.predict_proba(X_test)
+print('probaa: ', y_prob)
+
 y_pred = model.predict(X_test)
 accuracy = metrics.accuracy_score(y_test, y_pred)
+#accuracy_prob = metrics.accuracy_score(y_test, y_prob)
 
 print('Accuracy: ', accuracy)
+#print('Accuracy prob: ', accuracy_prob)
