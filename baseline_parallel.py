@@ -8,6 +8,7 @@ from skimage.segmentation import (inverse_gaussian_gradient, checkerboard_level_
 from skimage import io  # Load image file
 from sklearn.neighbors import KNeighborsClassifier  # Classificador knn
 from sklearn import svm  # Classificador SVN
+import id_label
 import claudio_funcoes as cv
 from sklearn.model_selection import train_test_split
 from sklearn import metrics  # Checar a acuracia
@@ -31,8 +32,12 @@ from skimage.draw import ellipse_perimeter
 
 #import cv2
 from skimage.morphology import disk
+from sklearn.preprocessing import MultiLabelBinarizer
 
 
+#id_label = id_label.return_id_label()
+#cv.save_dict_file('id_label', id_label)
+id_label = cv.load_dict_file('../id_label')
 
 AMOUNT_TEST = 0.2
 SEED_RANDOM = 4
@@ -153,7 +158,13 @@ def processing_thread(dir, files, label, id_core):
         features.append(con_hem.flatten())
         #features.append(con_hem)
         #label = id_core % 5
-        labels.append(label)
+
+        y = id_label[file_name].values()
+        ll = np.array(list(y))
+
+        asddas = ll[0]
+        #aa = MultiLabelBinarizer().fit_transform(id_label[file_name].values())
+        labels.append(np.array(list(y)).flatten()) # transform dict values in array
         cv.calculate_process(amount_files*2)
 
     return id_core, features, labels
@@ -210,12 +221,13 @@ def data_target(dir, label):
 # ----------- Main
 dir_epidural = "../epidural/"
 dir_normal = "../normal/"
+dir_teste = "../teste/"
 # dir_epidural ="//home/claudiovaliense/kaggle/rsna/epidural/"
 # dir_normal ="//home/claudiovaliense/kaggle/rsna/normal/"
 k = 3  # k of knn classifier
 data = []
 target = []
-amount_files = 40
+amount_files = 20
 iterations = 35  # method snake
 
 datas, targets = data_target(dir_epidural, 'epidural')
@@ -230,10 +242,15 @@ for d in datas:
 for t in targets:
     target.append(t)
 
+data_teste, y_test = data_target(dir_teste, 'teste')
+X_test = np.array(data_teste)
+y_test = np.array(y_test)
+
 X = np.array(data)
 print("Data matrix size : {:.2f}MB".format(X.nbytes / (1024 * 1000.0)))
-X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
-
+#X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
+X_train = X
+y_train = np.array(target)
 model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
 #model = RandomForestClassifier()
 #model = svm.SVC(kernel='rbf', gamma='scale')
@@ -249,12 +266,25 @@ ini = timeit.default_timer()
 model.fit(X_train, y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
-#y_prob = model.predict_proba(X_test)
-#print('probaa: ', y_prob)
+y_prob = model.predict_proba(X_test)
+print('y_prob: ')
+print(y_prob)
+
+ksda = np.array([[0, 1], [1, 1]])
 
 y_pred = model.predict(X_test)
+print(y_pred)
 accuracy = metrics.accuracy_score(y_test, y_pred)
 #accuracy_prob = metrics.accuracy_score(y_test, y_prob)
 
 print('Accuracy: ', accuracy)
 #print('Accuracy prob: ', accuracy_prob)
+
+amount_files_test=10
+# imprime todas as probabilidades das classes por documento
+'''for doc in range(amount_files_test):
+    print('doc: ', doc)
+    for classe in range(6):
+        print(y_prob[classe][doc][1])
+'''
+
