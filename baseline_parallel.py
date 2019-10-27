@@ -29,7 +29,7 @@ from skimage.draw import circle_perimeter
 from skimage.transform import hough_ellipse
 from skimage.draw import ellipse_perimeter
 
-import cv2
+#import cv2
 from skimage.morphology import disk
 
 
@@ -81,10 +81,10 @@ def processing_thread(dir, files, label, id_core):
     for file_name in files:
         norm = 'max'
         image = lib.read_image(dir + file_name)  # feature hematoma, utilize hu
-        lib.plot('original', image)
+        #lib.plot('original', image)
         selem = disk(1)
         image = skimage.morphology.dilation(image, selem)
-        lib.plot('dilation', image)
+        #lib.plot('dilation', image)
 
         # features
         snake = process_file(dir + file_name)  # method snake
