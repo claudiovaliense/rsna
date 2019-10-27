@@ -15,7 +15,7 @@ def read_image(filename):
 
 
 def plot(title, image):
-    plt.imshow(image, cmap=plt.cm.bone)
+    plt.imshow(image)
     plt.title(title)
     plt.show()
 

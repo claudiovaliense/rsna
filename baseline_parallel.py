@@ -17,8 +17,20 @@ import threading  # Multiprocessing set train
 import queue
 import timeit  # calcular metrica de tempo
 import sklearn.preprocessing as pre # utiliza normalize
+import skimage
 from skimage.filters import threshold_multiotsu
 from sklearn.ensemble import RandomForestClassifier
+from matplotlib import pyplot as plt
+from skimage.feature import canny # bord detect
+from skimage.transform import hough_circle, hough_circle_peaks
+from skimage import data, color
+from skimage.draw import circle_perimeter
+
+from skimage.transform import hough_ellipse
+from skimage.draw import ellipse_perimeter
+
+import cv2
+from skimage.morphology import disk
 
 
 
@@ -69,11 +81,46 @@ def processing_thread(dir, files, label, id_core):
     for file_name in files:
         norm = 'max'
         image = lib.read_image(dir + file_name)  # feature hematoma, utilize hu
+        lib.plot('original', image)
+        selem = disk(1)
+        image = skimage.morphology.dilation(image, selem)
+        lib.plot('dilation', image)
+
         # features
         snake = process_file(dir + file_name)  # method snake
         hematoma = pre.normalize(lib.substance_interval(image, 30, 90), norm=norm)
         white_matter = pre.normalize(lib.substance_interval(image, 20, 30), norm=norm)
         ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm)
+        white_tophat = pre.normalize(skimage.morphology.white_tophat(image), norm=norm)
+
+
+
+        #lib.plot('eroted', eroded)
+
+
+
+        '''edges = canny(image, sigma=3, low_threshold=10, high_threshold=50)
+        hough_radii = np.arange(1, 10, 1)
+        hough_res = hough_circle(edges, hough_radii)
+        accums, cx, cy, radii = hough_circle_peaks(hough_res, hough_radii,total_num_peaks=3)
+        # Draw them
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 4))
+        image = color.gray2rgb(image)
+        color.rgb2gray(image)
+        for center_y, center_x, radius in zip(cy, cx, radii):
+            circy, circx = circle_perimeter(center_y, center_x, radius, shape=image.shape)
+            image[circy, circx] = (220, 20, 20)
+
+        ax.imshow(image, cmap=plt.cm.gray)
+        plt.show()
+
+        lib.plot('sem rgb', color.rgb2gray(image))
+        '''
+
+
+        #plt.imshow(white_tophat, cmap=plt.cm.bone)
+        #plt.title('white_tophat')
+        #plt.show()
 
         #hematoma =lib.substance_interval(image, 30, 90)
         #white_matter = lib.substance_interval(image, 20, 30)
@@ -98,13 +145,14 @@ def processing_thread(dir, files, label, id_core):
 
         #con_hem = np.append(snake,hematoma)
         #con_hem =  np.append(con_hem,white_matter)
-        con_hem = snake + hematoma + white_matter + ventriculo
+        con_hem = snake + hematoma + white_matter + ventriculo + white_tophat
+        #lib.plot('combinacao', con_hem)
         #con_hem = pre.normalize(con_hem, norm=norm) # Ruim normalizar no final
 
 
         features.append(con_hem.flatten())
         #features.append(con_hem)
-        label = id_core % 5
+        #label = id_core % 5
         labels.append(label)
         cv.calculate_process(amount_files*2)
 
@@ -167,7 +215,7 @@ dir_normal = "../normal/"
 k = 3  # k of knn classifier
 data = []
 target = []
-amount_files = 50
+amount_files = 40
 iterations = 35  # method snake
 
 datas, targets = data_target(dir_epidural, 'epidural')
@@ -201,8 +249,8 @@ ini = timeit.default_timer()
 model.fit(X_train, y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
-y_prob = model.predict_proba(X_test)
-print('probaa: ', y_prob)
+#y_prob = model.predict_proba(X_test)
+#print('probaa: ', y_prob)
 
 y_pred = model.predict(X_test)
 accuracy = metrics.accuracy_score(y_test, y_pred)
