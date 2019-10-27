@@ -17,12 +17,12 @@ import multiprocessing as mp  # Multiprocessing set train
 import threading  # Multiprocessing set train
 import queue
 import timeit  # calcular metrica de tempo
-import sklearn.preprocessing as pre # utiliza normalize
+import sklearn.preprocessing as pre  # utiliza normalize
 import skimage
 from skimage.filters import threshold_multiotsu
 from sklearn.ensemble import RandomForestClassifier
 from matplotlib import pyplot as plt
-from skimage.feature import canny # bord detect
+from skimage.feature import canny  # bord detect
 from skimage.transform import hough_circle, hough_circle_peaks
 from skimage import data, color
 from skimage.draw import circle_perimeter
@@ -30,13 +30,12 @@ from skimage.draw import circle_perimeter
 from skimage.transform import hough_ellipse
 from skimage.draw import ellipse_perimeter
 
-#import cv2
+# import cv2
 from skimage.morphology import disk
 from sklearn.preprocessing import MultiLabelBinarizer
 
-
-#id_label = id_label.return_id_label()
-#cv.save_dict_file('id_label', id_label)
+# id_label = id_label.return_id_label()
+# cv.save_dict_file('id_label', id_label)
 id_label = cv.load_dict_file('../id_label')
 
 AMOUNT_TEST = 0.2
@@ -64,6 +63,7 @@ def process_file(filename):
     ls = morphological_chan_vese(image, iterations, init_level_set=init_ls, smoothing=1, iter_callback=callback)
     return evolution[-1]
 
+
 def snake_GAC(filename):
     image = io.imread(filename)
     gimage = inverse_gaussian_gradient(image)
@@ -79,17 +79,16 @@ def snake_GAC(filename):
     return evolution2[-1]
 
 
-
 def processing_thread(dir, files, label, id_core):
     features = []
     labels = []
     for file_name in files:
         norm = 'max'
         image = lib.read_image(dir + file_name)  # feature hematoma, utilize hu
-        #lib.plot('original', image)
+        # lib.plot('original', image)
         selem = disk(1)
         image = skimage.morphology.dilation(image, selem)
-        #lib.plot('dilation', image)
+        # lib.plot('dilation', image)
 
         # features
         snake = process_file(dir + file_name)  # method snake
@@ -98,11 +97,7 @@ def processing_thread(dir, files, label, id_core):
         ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm)
         white_tophat = pre.normalize(skimage.morphology.white_tophat(image), norm=norm)
 
-
-
-        #lib.plot('eroted', eroded)
-
-
+        # lib.plot('eroted', eroded)
 
         '''edges = canny(image, sigma=3, low_threshold=10, high_threshold=50)
         hough_radii = np.arange(1, 10, 1)
@@ -122,24 +117,23 @@ def processing_thread(dir, files, label, id_core):
         lib.plot('sem rgb', color.rgb2gray(image))
         '''
 
+        # plt.imshow(white_tophat, cmap=plt.cm.bone)
+        # plt.title('white_tophat')
+        # plt.show()
 
-        #plt.imshow(white_tophat, cmap=plt.cm.bone)
-        #plt.title('white_tophat')
-        #plt.show()
-
-        #hematoma =lib.substance_interval(image, 30, 90)
-        #white_matter = lib.substance_interval(image, 20, 30)
+        # hematoma =lib.substance_interval(image, 30, 90)
+        # white_matter = lib.substance_interval(image, 20, 30)
 
         # resultado ruim se adicionar. Teste em 80 imagens
 
-       # snake_method2 = snake_GAC(dir + file_name)
-      	# bone =  pre.normalize(lib.substance_interval(image, 700, 3000), norm=norm)
-       	# blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm)
+        # snake_method2 = snake_GAC(dir + file_name)
+        # bone =  pre.normalize(lib.substance_interval(image, 700, 3000), norm=norm)
+        # blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm)
 
-        #print("aqui1")
-        #multiotsu = threshold_multiotsu(image, classes=5) # melhora com o aumento de classe, mas piorou ao adicionar outras features
-        #print("aqui")
-        #regions_multi = pre.normalize(np.digitize(image, bins=multiotsu), norm=norm)
+        # print("aqui1")
+        # multiotsu = threshold_multiotsu(image, classes=5) # melhora com o aumento de classe, mas piorou ao adicionar outras features
+        # print("aqui")
+        # regions_multi = pre.normalize(np.digitize(image, bins=multiotsu), norm=norm)
 
         '''  colorized, otsu, thresholds = lib.multiotsu(image, 3)
           mask_ossos = np.zeros((512, 512))
@@ -147,32 +141,29 @@ def processing_thread(dir, files, label, id_core):
           ossos = image * mask_ossos
           ossos = pre.normalize(ossos, norm=norm)'''
 
-
-        #con_hem = np.append(snake,hematoma)
-        #con_hem =  np.append(con_hem,white_matter)
+        # con_hem = np.append(snake,hematoma)
+        # con_hem =  np.append(con_hem,white_matter)
         con_hem = snake + hematoma + white_matter + ventriculo + white_tophat
-        #lib.plot('combinacao', con_hem)
-        #con_hem = pre.normalize(con_hem, norm=norm) # Ruim normalizar no final
-
+        # lib.plot('combinacao', con_hem)
+        # con_hem = pre.normalize(con_hem, norm=norm) # Ruim normalizar no final
 
         features.append(con_hem.flatten())
-        #features.append(con_hem)
-        #label = id_core % 5
+        # features.append(con_hem)
+        # label = id_core % 5
 
         y = id_label[file_name].values()
         ll = np.array(list(y))
 
         asddas = ll[0]
-        #aa = MultiLabelBinarizer().fit_transform(id_label[file_name].values())
-        labels.append(np.array(list(y)).flatten()) # transform dict values in array
-        cv.calculate_process(amount_files*2)
+        # aa = MultiLabelBinarizer().fit_transform(id_label[file_name].values())
+        labels.append(np.array(list(y)).flatten())  # transform dict values in array
+        cv.calculate_process(amount_files * 2)
 
     return id_core, features, labels
 
     # combined method
     # return [hematoma.flatten()], [label]
     # return [np.append(contour.flatten(), hematoma.flatten())], [label]
-
 
 
 def data_target(dir, label):
@@ -230,6 +221,10 @@ target = []
 amount_files = 20
 iterations = 35  # method snake
 
+print('aqui')
+
+files_test = cv.list_files(dir_teste)
+
 datas, targets = data_target(dir_epidural, 'epidural')
 for d in datas:
     data.append(d)
@@ -248,20 +243,17 @@ y_test = np.array(y_test)
 
 X = np.array(data)
 print("Data matrix size : {:.2f}MB".format(X.nbytes / (1024 * 1000.0)))
-#X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
+# X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
 X_train = X
 y_train = np.array(target)
 model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
-#model = RandomForestClassifier()
-#model = svm.SVC(kernel='rbf', gamma='scale')
+# model = RandomForestClassifier()
+# model = svm.SVC(kernel='rbf', gamma='scale')
 # print('k: ', k)
-
 
 
 print("Train model")
 ini = timeit.default_timer()
-
-
 
 model.fit(X_train, y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
@@ -275,16 +267,29 @@ ksda = np.array([[0, 1], [1, 1]])
 y_pred = model.predict(X_test)
 print(y_pred)
 accuracy = metrics.accuracy_score(y_test, y_pred)
-#accuracy_prob = metrics.accuracy_score(y_test, y_prob)
+# accuracy_prob = metrics.accuracy_score(y_test, y_prob)
 
 print('Accuracy: ', accuracy)
-#print('Accuracy prob: ', accuracy_prob)
+# print('Accuracy prob: ', accuracy_prob)
 
-amount_files_test=10
+amount_files_test = len(files_test)
+# amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
-'''for doc in range(amount_files_test):
-    print('doc: ', doc)
-    for classe in range(6):
-        print(y_prob[classe][doc][1])
-'''
 
+# save result in file
+with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
+    csvfile.write('ID,Label\n')
+    for doc in range(amount_files_test):
+        for classe in range(6):
+            if classe == 0:
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_epidural,' + str(y_prob[classe][doc][1]) +'\n')
+            elif classe == 1:
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_intraparenchymal,' + str(y_prob[classe][doc][1]) +'\n')
+            elif classe == 2:
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_intraventricular,' + str(y_prob[classe][doc][1]) +'\n')
+            elif classe == 3:
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_subarachnoid,' + str(y_prob[classe][doc][1]) +'\n')
+            elif classe == 4:
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_subdural,' + str(y_prob[classe][doc][1]) +'\n')
+            elif classe == 5:
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_any,' + str(y_prob[classe][doc][1]) +'\n')

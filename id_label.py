@@ -2,7 +2,7 @@ import csv
 import shutil  # Copy files
 
 
-file = "../stage_1_train.csv"
+file = "../dataset/stage_1_train.csv"
 folder_train = "//home/claudiovaliense/kaggle/rsna/stage_1_train_images/"
 dst = "//home/claudiovaliense/kaggle/rsna/normal"
 types = dict()
