@@ -213,29 +213,35 @@ def data_target(dir, label):
 dir_epidural = "../epidural/"
 dir_normal = "../normal/"
 dir_teste = "../teste/"
+dir_train = "../dataset/stage_1_train_images/"
+dir_test = "../dataset/stage_1_test_images/"
 # dir_epidural ="//home/claudiovaliense/kaggle/rsna/epidural/"
 # dir_normal ="//home/claudiovaliense/kaggle/rsna/normal/"
 k = 3  # k of knn classifier
 data = []
 target = []
-amount_files = 20
+
 iterations = 35  # method snake
 
 print('aqui')
 
 files_test = cv.list_files(dir_teste)
+files_train = cv.list_files(dir_train)
+amount_files = len(files_train)
+amount_files=20
 
-datas, targets = data_target(dir_epidural, 'epidural')
+datas, targets = data_target(dir_epidural, 'ignore')
 for d in datas:
     data.append(d)
 for t in targets:
     target.append(t)
 
-datas, targets = data_target(dir_normal, 'normal')
+'''datas, targets = data_target(dir_normal, 'normal')
 for d in datas:
     data.append(d)
 for t in targets:
     target.append(t)
+'''
 
 data_teste, y_test = data_target(dir_teste, 'teste')
 X_test = np.array(data_teste)
@@ -259,17 +265,17 @@ model.fit(X_train, y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
 y_prob = model.predict_proba(X_test)
-print('y_prob: ')
-print(y_prob)
+#print('y_prob: ')
+#print(y_prob)
 
 ksda = np.array([[0, 1], [1, 1]])
 
 y_pred = model.predict(X_test)
-print(y_pred)
+#print(y_pred)
 accuracy = metrics.accuracy_score(y_test, y_pred)
 # accuracy_prob = metrics.accuracy_score(y_test, y_prob)
 
-print('Accuracy: ', accuracy)
+#print('Accuracy: ', accuracy)
 # print('Accuracy prob: ', accuracy_prob)
 
 amount_files_test = len(files_test)
