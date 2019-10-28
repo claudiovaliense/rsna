@@ -166,7 +166,7 @@ def processing_thread(dir, files, label, id_core):
             # aa = MultiLabelBinarizer().fit_transform(id_label[file_name].values())
             labels.append(np.array(list(y)).flatten())  # transform dict values in array
 
-        cv.calculate_process(amount_files_train + amount_files_test)
+        cv.calculate_process((amount_files_train)/n_cores)
 
     return id_core, features, labels
 
@@ -182,7 +182,6 @@ def data_target(dir, label):
     data_geral = []
     target = []
     target_geral = []
-    n_cores = mp.cpu_count()
 
     que = queue.Queue()
     threads_list = list()
@@ -232,6 +231,7 @@ files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
 amount_files_train = len(files_train)
 amount_files_test = len(files_test)
+n_cores = mp.cpu_count()
 
 data_target(dir_train, 'ignore')
 '''datas, targets = data_target(dir_train, 'ignore')
