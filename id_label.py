@@ -111,7 +111,7 @@ def ids_type_normal(types):
         count+=1
 
 
-return_id_label()
+#return_id_label()
 #ids_type_normal(amount_types())
 #types = amount_types()
 #print(len(types['epidural'])):

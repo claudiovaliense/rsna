@@ -19,6 +19,7 @@ import queue
 import timeit  # calcular metrica de tempo
 import sklearn.preprocessing as pre  # utiliza normalize
 import skimage
+import pickle
 from skimage.filters import threshold_multiotsu
 from sklearn.ensemble import RandomForestClassifier
 from matplotlib import pyplot as plt
@@ -86,8 +87,8 @@ def processing_thread(dir, files, label, id_core):
         norm = 'max'
         image = lib.read_image(dir + file_name)  # feature hematoma, utilize hu
         # lib.plot('original', image)
-        selem = disk(1)
-        image = skimage.morphology.dilation(image, selem)
+        # selem = disk(1)
+        # image = skimage.morphology.dilation(image, selem)
         # lib.plot('dilation', image)
 
         # features
@@ -96,6 +97,14 @@ def processing_thread(dir, files, label, id_core):
         white_matter = pre.normalize(lib.substance_interval(image, 20, 30), norm=norm)
         ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm)
         white_tophat = pre.normalize(skimage.morphology.white_tophat(image), norm=norm)
+        blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm)
+
+        np.savez_compressed('features/snake/' + file_name, snake=snake)
+        np.savez_compressed('features/hematoma/' + file_name, hematoma=hematoma)
+        np.savez_compressed('features/white_matter/' + file_name, white_matter=white_matter)
+        np.savez_compressed('features/ventriculo/' + file_name, ventriculo=ventriculo)
+        np.savez_compressed('features/white_tophat/' + file_name, white_tophat=white_tophat)
+        np.savez_compressed('features/blood/' + file_name, blood=blood)
 
         # lib.plot('eroted', eroded)
 
@@ -128,7 +137,6 @@ def processing_thread(dir, files, label, id_core):
 
         # snake_method2 = snake_GAC(dir + file_name)
         # bone =  pre.normalize(lib.substance_interval(image, 700, 3000), norm=norm)
-        # blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm)
 
         # print("aqui1")
         # multiotsu = threshold_multiotsu(image, classes=5) # melhora com o aumento de classe, mas piorou ao adicionar outras features
@@ -143,19 +151,20 @@ def processing_thread(dir, files, label, id_core):
 
         # con_hem = np.append(snake,hematoma)
         # con_hem =  np.append(con_hem,white_matter)
-        con_hem = snake + hematoma + white_matter + ventriculo + white_tophat
+        con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood
+
         # lib.plot('combinacao', con_hem)
         # con_hem = pre.normalize(con_hem, norm=norm) # Ruim normalizar no final
 
         features.append(con_hem.flatten())
         # features.append(con_hem)
         # label = id_core % 5
-        if label != 'teste':
-            y = id_label[file_name].values()                
-        # aa = MultiLabelBinarizer().fit_transform(id_label[file_name].values())        
+        if label != 'testes':  # test model
+            y = id_label[file_name].values()
+            # aa = MultiLabelBinarizer().fit_transform(id_label[file_name].values())
             labels.append(np.array(list(y)).flatten())  # transform dict values in array
 
-        cv.calculate_process(amount_files * 2)
+        cv.calculate_process(amount_files_train + amount_files_test)
 
     return id_core, features, labels
 
@@ -177,12 +186,13 @@ def data_target(dir, label):
     threads_list = list()
 
     files = cv.list_files(dir)
-    #files = files[0:amount_files]
+    # files = files[0:amount_files]
     files = cv.n_list(files, n_cores)
 
     for id_core in range(n_cores):
-        t = threading.Thread(target=lambda q, dir, arg1, arg2, arg3: q.put(processing_thread(dir, arg1, arg2, arg3)),
-                             args=(que, dir, files[id_core], label, id_core))
+        t = threading.Thread(
+            target=lambda q, dir, arg1, arg2, arg3: q.put(processing_thread(dir, arg1, arg2, arg3)),
+            args=(que, dir, files[id_core], label, id_core))
         t.start()
         threads_list.append(t)
 
@@ -208,25 +218,17 @@ def data_target(dir, label):
 
 
 # ----------- Main
-#dir_epidural = "../epidural/"
-#dir_normal = "../normal/"
-#dir_test = "../teste/"
 dir_train = "../dataset/stage_1_train_images/"
 dir_test = "../dataset/stage_1_test_images/"
-# dir_epidural ="//home/claudiovaliense/kaggle/rsna/epidural/"
-# dir_normal ="//home/claudiovaliense/kaggle/rsna/normal/"
+
 k = 3  # k of knn classifier
 data = []
 target = []
-
 iterations = 35  # method snake
-
-print('aqui')
-
 files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
-amount_files = len(files_train)
-#amount_files=500
+amount_files_train = len(files_train)
+amount_files_test = len(files_test)
 
 datas, targets = data_target(dir_train, 'ignore')
 for d in datas:
@@ -234,16 +236,10 @@ for d in datas:
 for t in targets:
     target.append(t)
 
-'''datas, targets = data_target(dir_normal, 'normal')
-for d in datas:
-    data.append(d)
-for t in targets:
-    target.append(t)
-'''
 
-data_teste, y_test = data_target(dir_test, 'teste')
+'''data_teste, y_test = data_target(dir_test, 'teste')
 X_test = np.array(data_teste)
-#y_test = np.array(y_test)
+y_test = np.array(y_test)  # teste model
 
 X = np.array(data)
 print("Data matrix size : {:.2f}MB".format(X.nbytes / (1024 * 1000.0)))
@@ -263,19 +259,17 @@ model.fit(X_train, y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
 y_prob = model.predict_proba(X_test)
-#print('y_prob: ')
-#print(y_prob)
+# print('y_prob: ')
+# print(y_prob)
 
-#y_pred = model.predict(X_test)
-#print(y_pred)
-#accuracy = metrics.accuracy_score(y_test, y_pred)
+y_pred = model.predict(X_test)
+# print(y_pred)
+accuracy = metrics.accuracy_score(y_test, y_pred)
 # accuracy_prob = metrics.accuracy_score(y_test, y_prob)
 
-#print('Accuracy: ', accuracy)
+print('Accuracy: ', accuracy)
 # print('Accuracy prob: ', accuracy_prob)
 
-amount_files_test = len(files_test)
-amount_files_test = amount_files
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
 
@@ -285,14 +279,18 @@ with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
     for doc in range(amount_files_test):
         for classe in range(6):
             if classe == 0:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_epidural,' + str(y_prob[classe][doc][1]) +'\n')
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_epidural,' + str(y_prob[classe][doc][1]) + '\n')
             elif classe == 1:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_intraparenchymal,' + str(y_prob[classe][doc][1]) +'\n')
+                csvfile.write(
+                    str(files_test[doc]).split('.')[0] + '_intraparenchymal,' + str(y_prob[classe][doc][1]) + '\n')
             elif classe == 2:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_intraventricular,' + str(y_prob[classe][doc][1]) +'\n')
+                csvfile.write(
+                    str(files_test[doc]).split('.')[0] + '_intraventricular,' + str(y_prob[classe][doc][1]) + '\n')
             elif classe == 3:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_subarachnoid,' + str(y_prob[classe][doc][1]) +'\n')
+                csvfile.write(
+                    str(files_test[doc]).split('.')[0] + '_subarachnoid,' + str(y_prob[classe][doc][1]) + '\n')
             elif classe == 4:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_subdural,' + str(y_prob[classe][doc][1]) +'\n')
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_subdural,' + str(y_prob[classe][doc][1]) + '\n')
             elif classe == 5:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_any,' + str(y_prob[classe][doc][1]) +'\n')
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_any,' + str(y_prob[classe][doc][1]) + '\n')
+'''

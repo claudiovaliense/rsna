@@ -46,6 +46,7 @@ def arquivo_para_corpus(file_corpus, id_column):
             corpus.append(row[id_column])
     return corpus
 
+
 def arquivo_para_corpus_separate_vir(file_corpus, id_column=int):
     """ Transforma o arquivo .csv no formato 'list' compatível para o tfidf."""
     corpus = []
@@ -53,12 +54,13 @@ def arquivo_para_corpus_separate_vir(file_corpus, id_column=int):
         csv_reader = csv.reader(out, delimiter=',')
         # next(csv_reader)  # Pular cabecalho
         for row in csv_reader:
-            #corpus.append(filter(lambda x: x > id_column, row))
-            #lambda a,
+            # corpus.append(filter(lambda x: x > id_column, row))
+            # lambda a,
             row = row[1:]
             row = ' '.join(row)
             corpus.append(row)
     return corpus
+
 
 def arquivo_para_corpus_delimiter(file_corpus, delimiter):
     """ Transforma o arquivo .csv no formato 'list' compatível para o tfidf."""
@@ -103,7 +105,7 @@ def soma_das_frequencia2(listas):
     termos_unicos = {}
     for termo_freq in listas:
         if termo_freq[0] in termos_unicos:
-            termos_unicos[termo_freq[0]] += termo_freq[1] # Valor atual + anterior
+            termos_unicos[termo_freq[0]] += termo_freq[1]  # Valor atual + anterior
         else:
             termos_unicos[termo_freq[0]] = termo_freq[1]
     return sorted(termos_unicos.items(), key=lambda e: (-e[1], e[0]))
@@ -193,22 +195,23 @@ def add_caracter_column(file_csv):
                 list_k = row[0].split(" ")
                 s = ""
 
-                i=1
+                i = 1
                 for k in list_k:
                     s = s + " " + k
                     if i == 3:
                         break
-                    i+=1
+                    i += 1
                 row[0] = row[0].replace(" ", ",")
 
                 if len(list_k) > 4:
-                    one = list_k[0] +" " + list_k[1]
-                    dois = list_k[0] +" " + list_k[2]
-                    tres = list_k[0] +" " + list_k[3]
-                    quatro = list_k[1] +" " + list_k[2]
-                    final = list_k[0] +"," + list_k[1] +"," +list_k[2] +"," +list_k[3] +"," +list_k[4] +"," +one +"," +dois +"," +tres +"," + quatro +"," +row[0] +"," +s
+                    one = list_k[0] + " " + list_k[1]
+                    dois = list_k[0] + " " + list_k[2]
+                    tres = list_k[0] + " " + list_k[3]
+                    quatro = list_k[1] + " " + list_k[2]
+                    final = list_k[0] + "," + list_k[1] + "," + list_k[2] + "," + list_k[3] + "," + list_k[
+                        4] + "," + one + "," + dois + "," + tres + "," + quatro + "," + row[0] + "," + s
                 else:
-                    final = row[0] +"," + s
+                    final = row[0] + "," + s
 
                 rows_out.writerow([final])
 
@@ -227,6 +230,7 @@ def k_max_index(list, k):
         max_index.append(index_k)
         list_m[index_k] = -1
     return max_index
+
 
 def k_max_index_list2(list, k):
     """ Return index of max values.
@@ -248,45 +252,52 @@ def k_max_index_list2(list, k):
     return max_index
 
 
-def amount_terms_corpus (X, vec_terms):
+def amount_terms_corpus(X, vec_terms):
     """ Amount of terms in corpus """
     terms_total = {}
     for i in range(X.shape[1]):
         terms_total[vec_terms[i]] = sum(X.getcol(i).toarray())[0]
     return terms_total
 
+
 def save_dict_file(file, dict):
     """Save dict in file"""
     with open(file, 'w', newline='') as csv_write:
         json.dump(dict, csv_write)
+
 
 def load_dict_file(file):
     """Load dict in file"""
     with open(file, 'r', newline='') as csv_reader:
         return json.load(csv_reader)
 
-def count_same_in_index(list,list2):
+
+def count_same_in_index(list, list2):
     """ Return the amount of value in index."""
-    count=0
+    count = 0
     for i in range(len(list)):
         if list[i] != 0 and list2[i] != 0:
-            count+=1
+            count += 1
     return count
 
+
 def list_files(dir):
-    files_name =[]
+    files_name = []
     for r, d, files_array in os.walk(dir):
         for f in files_array:
             files_name.append(f)
     return files_name
 
+
 def remove_duplicate(mylist):
     """Remve itens duplicate in list."""
     return list(dict.fromkeys(mylist))
 
+
 def n_list(list, n):
     """Split list in n lists"""
     return numpy.array_split(list, n)
+
 
 def time_function(fun, params):
     """Calculate time function"""
@@ -298,7 +309,7 @@ def time_function(fun, params):
         result = fun()
     if (amount_param == 1):
         result = fun(params[0])
-    if(amount_param == 2):
+    if (amount_param == 2):
         result = fun(params[0], params[1])
     if (amount_param == 3):
         result = fun(params[0], params[1], params[2])
@@ -312,7 +323,32 @@ def time_function(fun, params):
 
 
 count_process = 0
+
+
 def calculate_process(size):
     global count_process
     count_process += 1
-    print("Process: ", count_process, "/", size, ", ", (count_process/size)*100," %")
+    print("Process: ", count_process, "/", size, ", ", (count_process / size) * 100, " %")
+
+
+def load_X_compress(files, id_label):
+    features = []
+    labels = []
+    for file_name in files:
+        snake = numpy.load('features/snake/' + file_name+'.npz')['snake']
+        blood = numpy.load('features/blood/' + file_name+'.npz')['blood']
+        hematoma = numpy.load('features/hematoma/' + file_name+'.npz')['hematoma']
+        ventriculo = numpy.load('features/ventriculo/' + file_name+'.npz')['ventriculo']
+        white_matter = numpy.load('features/white_matter/' + file_name+'.npz')['white_matter']
+        white_tophat = numpy.load('features/white_tophat/' + file_name+'.npz')['white_tophat']
+        con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
+        features.append(con_hem.flatten())
+
+        y = id_label[file_name].values()
+        labels.append(numpy.array(list(y)).flatten())  # transform dict values in array
+    return features, labels
+
+'''files_test = list_files("../dataset/stage_1_train_images/")
+id_label = load_dict_file('../id_label')
+X_train, Y_train =  load_X_compress(files_test)
+'''
