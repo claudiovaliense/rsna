@@ -108,6 +108,8 @@ def processing_thread(dir, files, label, id_core):
         np.savez_compressed('features/white_tophat/' + file_name, white_tophat=white_tophat)
         np.savez_compressed('features/blood/' + file_name, blood=blood)
 
+        cv.calculate_process((amount_files_train) / n_cores)
+
         # lib.plot('eroted', eroded)
 
         '''edges = canny(image, sigma=3, low_threshold=10, high_threshold=50)
@@ -153,7 +155,7 @@ def processing_thread(dir, files, label, id_core):
 
         # con_hem = np.append(snake,hematoma)
         # con_hem =  np.append(con_hem,white_matter)
-        con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood
+        '''con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood
 
         # lib.plot('combinacao', con_hem)
         # con_hem = pre.normalize(con_hem, norm=norm) # Ruim normalizar no final
@@ -166,9 +168,9 @@ def processing_thread(dir, files, label, id_core):
             # aa = MultiLabelBinarizer().fit_transform(id_label[file_name].values())
             labels.append(np.array(list(y)).flatten())  # transform dict values in array
 
-        cv.calculate_process((amount_files_train)/n_cores)
+        
 
-    return id_core, features, labels
+    return id_core, features, labels'''
 
     # combined method
     # return [hematoma.flatten()], [label]
