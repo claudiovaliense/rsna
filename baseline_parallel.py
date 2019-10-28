@@ -35,6 +35,8 @@ from skimage.draw import ellipse_perimeter
 from skimage.morphology import disk
 from sklearn.preprocessing import MultiLabelBinarizer
 
+import multiprocessing  # Version parallel
+
 # id_label = id_label.return_id_label()
 # cv.save_dict_file('id_label', id_label)
 id_label = cv.load_dict_file('../id_label')
@@ -190,9 +192,10 @@ def data_target(dir, label):
     files = cv.n_list(files, n_cores)
 
     for id_core in range(n_cores):
-        t = threading.Thread(
+        t = multiprocessing.Process(target=processing_thread, args=(dir, files[id_core], label, id_core))
+        '''t = threading.Thread(
             target=lambda q, dir, arg1, arg2, arg3: q.put(processing_thread(dir, arg1, arg2, arg3)),
-            args=(que, dir, files[id_core], label, id_core))
+            args=(que, dir, files[id_core], label, id_core))'''
         t.start()
         threads_list.append(t)
 
@@ -200,7 +203,7 @@ def data_target(dir, label):
     for t in threads_list:
         t.join()
 
-    return_cores = dict()
+    '''return_cores = dict()
     # Check thread's return value
     while not que.empty():
         id_core, datas, targets = que.get()
@@ -214,7 +217,7 @@ def data_target(dir, label):
         for target in targets:
             target_geral.append(target)
 
-    return [data_geral, target_geral]
+    return [data_geral, target_geral]'''
 
 
 # ----------- Main
@@ -230,12 +233,13 @@ files_train = cv.list_files(dir_train)
 amount_files_train = len(files_train)
 amount_files_test = len(files_test)
 
-datas, targets = data_target(dir_train, 'ignore')
+data_target(dir_train, 'ignore')
+'''datas, targets = data_target(dir_train, 'ignore')
 for d in datas:
     data.append(d)
 for t in targets:
     target.append(t)
-
+'''
 
 '''data_teste, y_test = data_target(dir_test, 'teste')
 X_test = np.array(data_teste)
