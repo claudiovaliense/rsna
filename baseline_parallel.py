@@ -150,13 +150,11 @@ def processing_thread(dir, files, label, id_core):
         features.append(con_hem.flatten())
         # features.append(con_hem)
         # label = id_core % 5
+        if label != 'teste':
+            y = id_label[file_name].values()                
+        # aa = MultiLabelBinarizer().fit_transform(id_label[file_name].values())        
+            labels.append(np.array(list(y)).flatten())  # transform dict values in array
 
-        y = id_label[file_name].values()
-        ll = np.array(list(y))
-
-        asddas = ll[0]
-        # aa = MultiLabelBinarizer().fit_transform(id_label[file_name].values())
-        labels.append(np.array(list(y)).flatten())  # transform dict values in array
         cv.calculate_process(amount_files * 2)
 
     return id_core, features, labels
@@ -179,7 +177,7 @@ def data_target(dir, label):
     threads_list = list()
 
     files = cv.list_files(dir)
-    files = files[0:amount_files]
+    #files = files[0:amount_files]
     files = cv.n_list(files, n_cores)
 
     for id_core in range(n_cores):
@@ -210,9 +208,9 @@ def data_target(dir, label):
 
 
 # ----------- Main
-dir_epidural = "../epidural/"
-dir_normal = "../normal/"
-dir_teste = "../teste/"
+#dir_epidural = "../epidural/"
+#dir_normal = "../normal/"
+#dir_test = "../teste/"
 dir_train = "../dataset/stage_1_train_images/"
 dir_test = "../dataset/stage_1_test_images/"
 # dir_epidural ="//home/claudiovaliense/kaggle/rsna/epidural/"
@@ -225,12 +223,12 @@ iterations = 35  # method snake
 
 print('aqui')
 
-files_test = cv.list_files(dir_teste)
+files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
 amount_files = len(files_train)
-amount_files=20
+#amount_files=500
 
-datas, targets = data_target(dir_epidural, 'ignore')
+datas, targets = data_target(dir_train, 'ignore')
 for d in datas:
     data.append(d)
 for t in targets:
@@ -243,9 +241,9 @@ for t in targets:
     target.append(t)
 '''
 
-data_teste, y_test = data_target(dir_teste, 'teste')
+data_teste, y_test = data_target(dir_test, 'teste')
 X_test = np.array(data_teste)
-y_test = np.array(y_test)
+#y_test = np.array(y_test)
 
 X = np.array(data)
 print("Data matrix size : {:.2f}MB".format(X.nbytes / (1024 * 1000.0)))
@@ -268,17 +266,16 @@ y_prob = model.predict_proba(X_test)
 #print('y_prob: ')
 #print(y_prob)
 
-ksda = np.array([[0, 1], [1, 1]])
-
-y_pred = model.predict(X_test)
+#y_pred = model.predict(X_test)
 #print(y_pred)
-accuracy = metrics.accuracy_score(y_test, y_pred)
+#accuracy = metrics.accuracy_score(y_test, y_pred)
 # accuracy_prob = metrics.accuracy_score(y_test, y_prob)
 
 #print('Accuracy: ', accuracy)
 # print('Accuracy prob: ', accuracy_prob)
 
 amount_files_test = len(files_test)
+amount_files_test = amount_files
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
 
