@@ -302,8 +302,8 @@ target = []
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
-files_train = files_train[0:100]
-files_test = files_test[0:20]
+files_train = files_train[0:500]
+#files_test = files_test[0:20]
 
 amount_files_train = len(files_train)
 amount_files_test = len(files_test)
