@@ -331,21 +331,23 @@ def calculate_process(size):
     print("Process: ", count_process, "/", size, ", ", (count_process / size) * 100, " %")
 
 
-def load_X_compress(files, id_label):
+def load_X_compress(files, id_label, path, test_model):
     features = []
     labels = []
     for file_name in files:
-        snake = numpy.load('features/snake/' + file_name+'.npz')['snake']
-        blood = numpy.load('features/blood/' + file_name+'.npz')['blood']
-        hematoma = numpy.load('features/hematoma/' + file_name+'.npz')['hematoma']
-        ventriculo = numpy.load('features/ventriculo/' + file_name+'.npz')['ventriculo']
-        white_matter = numpy.load('features/white_matter/' + file_name+'.npz')['white_matter']
-        white_tophat = numpy.load('features/white_tophat/' + file_name+'.npz')['white_tophat']
+        snake = numpy.load(path+'features/snake/' + file_name+'.npz')['snake']
+        blood = numpy.load(path+'features/blood/' + file_name+'.npz')['blood'].astype('float16')
+        hematoma = numpy.load(path+'features/hematoma/' + file_name+'.npz')['hematoma'].astype('float16')
+        ventriculo = numpy.load(path+'features/ventriculo/' + file_name+'.npz')['ventriculo'].astype('float16')
+        white_matter = numpy.load(path+'features/white_matter/' + file_name+'.npz')['white_matter'].astype('float16')
+        white_tophat = numpy.load(path+'features/white_tophat/' + file_name+'.npz')['white_tophat'].astype('float16')
+        #con_hem = hematoma + white_matter + ventriculo + white_tophat + blood  # combined
         con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
         features.append(con_hem.flatten())
 
-        y = id_label[file_name].values()
-        labels.append(numpy.array(list(y)).flatten())  # transform dict values in array
+        if test_model == True:
+            y = id_label[file_name].values()
+            labels.append(numpy.array(list(y)).flatten().astype(('int')))  # transform dict values in array
     return features, labels
 
 '''files_test = list_files("../dataset/stage_1_train_images/")

@@ -7,8 +7,8 @@ from skimage.color import label2rgb
 
 def read_image(filename):
     ds = pydicom.dcmread(filename)
-    b = ds.RescaleIntercept
-    m = ds.RescaleSlope
+    b = int(ds.RescaleIntercept)
+    m = int(ds.RescaleSlope)
     # hu = pixel_value * slope + intercept
     image = m * ds.pixel_array + b
     return image

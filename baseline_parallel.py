@@ -20,6 +20,7 @@ import timeit  # calcular metrica de tempo
 import sklearn.preprocessing as pre  # utiliza normalize
 import skimage
 import pickle
+import joblib
 from skimage.filters import threshold_multiotsu
 from sklearn.ensemble import RandomForestClassifier
 from matplotlib import pyplot as plt
@@ -27,6 +28,7 @@ from skimage.feature import canny  # bord detect
 from skimage.transform import hough_circle, hough_circle_peaks
 from skimage import data, color
 from skimage.draw import circle_perimeter
+from sklearn.preprocessing import MinMaxScaler
 
 from skimage.transform import hough_ellipse
 from skimage.draw import ellipse_perimeter
@@ -86,8 +88,12 @@ def processing_thread(dir, files, label, id_core):
     features = []
     labels = []
     for file_name in files:
+        # scaler = MinMaxScaler() # example minmax, scaler
+        # hematoma = scaler.fit_transform(hematoma)
+
         norm = 'max'
         image = lib.read_image(dir + file_name)  # feature hematoma, utilize hu
+        # print("image matrix size : {:.2f}MB".format(image.nbytes / (1024 * 1000.0)))
         # lib.plot('original', image)
         # selem = disk(1)
         # image = skimage.morphology.dilation(image, selem)
@@ -95,20 +101,28 @@ def processing_thread(dir, files, label, id_core):
 
         # features
         snake = process_file(dir + file_name)  # method snake
-        hematoma = pre.normalize(lib.substance_interval(image, 30, 90), norm=norm)
-        white_matter = pre.normalize(lib.substance_interval(image, 20, 30), norm=norm)
-        ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm)
-        white_tophat = pre.normalize(skimage.morphology.white_tophat(image), norm=norm)
-        blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm)
+        hematoma = pre.normalize(lib.substance_interval(image, 30, 90), norm=norm).astype('float16')
+        white_matter = pre.normalize(lib.substance_interval(image, 20, 30), norm=norm).astype('float16')
+        ventriculo = pre.normalize(lib.substance_interval(image, 0, 15), norm=norm).astype('float16')
+        white_tophat = pre.normalize(skimage.morphology.white_tophat(image), norm=norm).astype('float16')
+        blood = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm).astype('float16')
 
-        np.savez_compressed('features/snake/' + file_name, snake=snake)
-        np.savez_compressed('features/hematoma/' + file_name, hematoma=hematoma)
-        np.savez_compressed('features/white_matter/' + file_name, white_matter=white_matter)
-        np.savez_compressed('features/ventriculo/' + file_name, ventriculo=ventriculo)
-        np.savez_compressed('features/white_tophat/' + file_name, white_tophat=white_tophat)
-        np.savez_compressed('features/blood/' + file_name, blood=blood)
+        # x = np.concatenate((snake,hematoma,white_matter,ventriculo,white_tophat,blood))
+        # print("XXData matrix size : {:.2f}MB".format(x.nbytes / (1024 * 1000.0)))
 
-        cv.calculate_process((amount_files_train) / n_cores)
+        # con_hem = hematoma +  ventriculo + white_tophat + blood
+        # print("Data matrix size : {:.2f}MB".format(con_hem.nbytes / (1024 * 1000.0)))
+        # con_hem = hematoma + white_matter + ventriculo
+        # print("Data matrix size : {:.2f}MB".format(con_hem.nbytes / (1024 * 1000.0)))
+
+        np.savez_compressed(label + 'features/snake/' + file_name, snake=snake)
+        np.savez_compressed(label + 'features/hematoma/' + file_name, hematoma=hematoma)
+        np.savez_compressed(label + 'features/white_matter/' + file_name, white_matter=white_matter)
+        np.savez_compressed(label + 'features/ventriculo/' + file_name, ventriculo=ventriculo)
+        np.savez_compressed(label + 'features/white_tophat/' + file_name, white_tophat=white_tophat)
+        np.savez_compressed(label + 'features/blood/' + file_name, blood=blood)
+
+        cv.calculate_process((amount_files) / n_cores)
 
         # lib.plot('eroted', eroded)
 
@@ -233,70 +247,65 @@ files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
 amount_files_train = len(files_train)
 amount_files_test = len(files_test)
+amount_files = amount_files_test
 n_cores = mp.cpu_count()
 
-data_target(dir_train, 'ignore')
-'''datas, targets = data_target(dir_train, 'ignore')
-for d in datas:
-    data.append(d)
-for t in targets:
-    target.append(t)
-'''
+#data_target(dir_train, '')  # features in files
+#data_target(dir_test, "teste/") # rodar no server ainda
 
-'''data_teste, y_test = data_target(dir_test, 'teste')
-X_test = np.array(data_teste)
-y_test = np.array(y_test)  # teste model
+ini = timeit.default_timer()
+files_train = files_train[0:100000]
+X_train, Y_train = cv.load_X_compress(files_train, id_label, '', True)
+X_test, Y_test = cv.load_X_compress(files_test, id_label, 'teste/', False)
+print("Carregar dados: %f" % (timeit.default_timer() - ini))
 
-X = np.array(data)
-print("Data matrix size : {:.2f}MB".format(X.nbytes / (1024 * 1000.0)))
+# '''
+# format classifier
+X_train = np.array(X_train)
+Y_train = np.array(Y_train)
+X_test = np.array(X_test)
+#Y_test = np.array(Y_test)  # teste model
+
+print("Data matrix size : {:.2f}MB".format(X_train.nbytes / (1024 * 1000.0)))
 # X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
-X_train = X
-y_train = np.array(target)
-model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
-# model = RandomForestClassifier()
-# model = svm.SVC(kernel='rbf', gamma='scale')
-# print('k: ', k)
 
+#model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
+model = RandomForestClassifier(n_jobs=-1)
+# model = svm.SVC(kernel='rbf', gamma='scale')
 
 print("Train model")
 ini = timeit.default_timer()
-
-model.fit(X_train, y_train)
+model.fit(X_train, Y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
-y_prob = model.predict_proba(X_test)
-# print('y_prob: ')
-# print(y_prob)
+# save the model to disk
+#pickle.dump(model, open(cv.name_out('./KNN.model'), 'wb'))
+joblib.dump(model, open(cv.name_out('./KNN.model'), 'wb'))
 
-y_pred = model.predict(X_test)
-# print(y_pred)
-accuracy = metrics.accuracy_score(y_test, y_pred)
-# accuracy_prob = metrics.accuracy_score(y_test, y_prob)
+Y_prob = model.predict_proba(X_test)
 
-print('Accuracy: ', accuracy)
-# print('Accuracy prob: ', accuracy_prob)
+#Y_pred = model.predict(X_test)
+#accuracy = metrics.accuracy_score(Y_test, Y_pred)
+#print('Accuracy: ', accuracy)
 
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
-
 # save result in file
 with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
     csvfile.write('ID,Label\n')
     for doc in range(amount_files_test):
         for classe in range(6):
             if classe == 0:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_epidural,' + str(y_prob[classe][doc][1]) + '\n')
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_epidural,' + str(Y_prob[classe][doc][1]) + '\n')
             elif classe == 1:
-                csvfile.write(
-                    str(files_test[doc]).split('.')[0] + '_intraparenchymal,' + str(y_prob[classe][doc][1]) + '\n')
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_intraparenchymal,' + str(Y_prob[classe][doc][1]) + '\n')
             elif classe == 2:
                 csvfile.write(
-                    str(files_test[doc]).split('.')[0] + '_intraventricular,' + str(y_prob[classe][doc][1]) + '\n')
+                    str(files_test[doc]).split('.')[0] + '_intraventricular,' + str(Y_prob[classe][doc][1]) + '\n')
             elif classe == 3:
                 csvfile.write(
-                    str(files_test[doc]).split('.')[0] + '_subarachnoid,' + str(y_prob[classe][doc][1]) + '\n')
+                    str(files_test[doc]).split('.')[0] + '_subarachnoid,' + str(Y_prob[classe][doc][1]) + '\n')
             elif classe == 4:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_subdural,' + str(y_prob[classe][doc][1]) + '\n')
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_subdural,' + str(Y_prob[classe][doc][1]) + '\n')
             elif classe == 5:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_any,' + str(y_prob[classe][doc][1]) + '\n')
-'''
+                csvfile.write(str(files_test[doc]).split('.')[0] + '_any,' + str(Y_prob[classe][doc][1]) + '\n')
