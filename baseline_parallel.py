@@ -262,7 +262,8 @@ def load_parallel(files, id_label, path, test_model):
     for core in range(n_cores):
         for index in range(len(X[core])):
             data.append(X[core][index])
-            labels.append(Y[core][index])
+            if test_model == True:
+                labels.append(Y[core][index])
 
     return data, labels
 
@@ -301,7 +302,8 @@ target = []
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
-files_train = files_train[0:20]
+files_train = files_train[0:100]
+files_test = files_test[0:20]
 
 amount_files_train = len(files_train)
 amount_files_test = len(files_test)
@@ -318,7 +320,7 @@ ini = timeit.default_timer()
 #X_test, Y_test = cv.load_X_compress(files_test, id_label, 'teste/', True)
 
 X_train, Y_train = load_parallel(files_train, id_label, '', True)
-X_test, Y_test = load_parallel(files_test, id_label, 'teste/', True)
+X_test, Y_test = load_parallel(files_test, id_label, 'teste/', False) # test model, alter True
 print("Carregar dados: %f" % (timeit.default_timer() - ini))
 
 #print(X_train)
@@ -328,7 +330,7 @@ print("Carregar dados: %f" % (timeit.default_timer() - ini))
 X_train = np.array(X_train)
 Y_train = np.array(Y_train)
 X_test = np.array(X_test)
-Y_test = np.array(Y_test)  # teste model
+#Y_test = np.array(Y_test)  # teste model
 
 print("Data matrix size : {:.2f}MB".format(X_train.nbytes / (1024 * 1000.0)))
 # X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
@@ -348,9 +350,9 @@ joblib.dump(model, open(cv.name_out('./RandomForest.model'), 'wb'))
 
 Y_prob = model.predict_proba(X_test)
 
-Y_pred = model.predict(X_test)
-accuracy = metrics.accuracy_score(Y_test, Y_pred)
-print('Accuracy: ', accuracy)
+#Y_pred = model.predict(X_test)
+#accuracy = metrics.accuracy_score(Y_test, Y_pred)
+#print('Accuracy: ', accuracy)
 
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
