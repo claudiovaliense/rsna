@@ -254,7 +254,8 @@ def load_parallel(files, id_label, path, test_model):
     for i in range(n_cores):
         X_core, Y_core = (return_process_dict[i])
         X.append(X_core)
-        Y.append(Y_core)
+        if test_model == True:
+            Y.append(Y_core)
 
     # resultado dos cores na mesma ordem do ids de entradas
     data=[]
@@ -302,7 +303,7 @@ target = []
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
-files_train = files_train[0:500]
+files_train = files_train[0:10000]
 #files_test = files_test[0:20]
 
 amount_files_train = len(files_train)
