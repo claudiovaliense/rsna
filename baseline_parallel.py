@@ -115,6 +115,7 @@ def processing_thread(dir, files, label, id_core):
         # con_hem = hematoma + white_matter + ventriculo
         # print("Data matrix size : {:.2f}MB".format(con_hem.nbytes / (1024 * 1000.0)))
 
+
         np.savez_compressed(label + 'features/snake/' + file_name, snake=snake)
         np.savez_compressed(label + 'features/hematoma/' + file_name, hematoma=hematoma)
         np.savez_compressed(label + 'features/white_matter/' + file_name, white_matter=white_matter)
@@ -235,9 +236,64 @@ def data_target(dir, label):
     return [data_geral, target_geral]'''
 
 
+def load_parallel(files, id_label, path, test_model):
+    process_list = list()
+    X=[]
+    Y=[]
+    files = cv.n_list(files, n_cores)
+
+    for id_core in range(n_cores):
+        p = multiprocessing.Process(target=load_X_compress_parallel, args=(files[id_core], id_label, path, test_model, id_core))
+        p.start()
+        process_list.append(p)
+
+    # Join all the threads
+    for p in process_list:
+        p.join()
+
+    for i in range(n_cores):
+        X_core, Y_core = (return_process_dict[i])
+        X.append(X_core)
+        Y.append(Y_core)
+
+    # resultado dos cores na mesma ordem do ids de entradas
+    data=[]
+    labels=[]
+    for core in range(n_cores):
+        for index in range(len(X[core])):
+            data.append(X[core][index])
+            labels.append(Y[core][index])
+
+    return data, labels
+
+
+def load_X_compress_parallel(files, id_label, path, test_model, id_core):
+    features = []
+    labels = []
+    for file_name in files:
+        snake = np.load(path+'features/snake/' + file_name+'.npz')['snake']
+        blood = np.load(path+'features/blood/' + file_name+'.npz')['blood'].astype('float16')
+        hematoma = np.load(path+'features/hematoma/' + file_name+'.npz')['hematoma'].astype('float16')
+        ventriculo = np.load(path+'features/ventriculo/' + file_name+'.npz')['ventriculo'].astype('float16')
+        white_matter = np.load(path+'features/white_matter/' + file_name+'.npz')['white_matter'].astype('float16')
+        white_tophat = np.load(path+'features/white_tophat/' + file_name+'.npz')['white_tophat'].astype('float16')
+        #con_hem = hematoma + white_matter + ventriculo + white_tophat + blood  # combined
+        con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
+        features.append(con_hem.flatten())
+
+        if test_model == True:
+            y = id_label[file_name].values()
+            labels.append(np.array(list(y)).flatten().astype(('int')))  # transform dict values in array
+
+    return_process_dict[id_core] = features, labels
+
+
 # ----------- Main
 dir_train = "../dataset/stage_1_train_images/"
 dir_test = "../dataset/stage_1_test_images/"
+manager = multiprocessing.Manager()  #parallel
+return_process_dict = manager.dict() #parallel
+
 
 k = 3  # k of knn classifier
 data = []
@@ -245,6 +301,8 @@ target = []
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
+files_train = files_train[0:20]
+
 amount_files_train = len(files_train)
 amount_files_test = len(files_test)
 amount_files = amount_files_test
@@ -254,23 +312,29 @@ n_cores = mp.cpu_count()
 #data_target(dir_test, "teste/") # rodar no server ainda
 
 ini = timeit.default_timer()
-files_train = files_train[0:100000]
-X_train, Y_train = cv.load_X_compress(files_train, id_label, '', True)
-X_test, Y_test = cv.load_X_compress(files_test, id_label, 'teste/', False)
+
+
+#X_train, Y_train = cv.load_X_compress(files_train, id_label, '', True)
+#X_test, Y_test = cv.load_X_compress(files_test, id_label, 'teste/', True)
+
+X_train, Y_train = load_parallel(files_train, id_label, '', True)
+X_test, Y_test = load_parallel(files_test, id_label, 'teste/', True)
 print("Carregar dados: %f" % (timeit.default_timer() - ini))
+
+#print(X_train)
 
 # '''
 # format classifier
 X_train = np.array(X_train)
 Y_train = np.array(Y_train)
 X_test = np.array(X_test)
-#Y_test = np.array(Y_test)  # teste model
+Y_test = np.array(Y_test)  # teste model
 
 print("Data matrix size : {:.2f}MB".format(X_train.nbytes / (1024 * 1000.0)))
 # X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
 
 #model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
-model = RandomForestClassifier(n_jobs=-1)
+model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1)
 # model = svm.SVC(kernel='rbf', gamma='scale')
 
 print("Train model")
@@ -280,13 +344,13 @@ print("Time train model: %f" % (timeit.default_timer() - ini))
 
 # save the model to disk
 #pickle.dump(model, open(cv.name_out('./KNN.model'), 'wb'))
-joblib.dump(model, open(cv.name_out('./KNN.model'), 'wb'))
+joblib.dump(model, open(cv.name_out('./RandomForest.model'), 'wb'))
 
 Y_prob = model.predict_proba(X_test)
 
-#Y_pred = model.predict(X_test)
-#accuracy = metrics.accuracy_score(Y_test, Y_pred)
-#print('Accuracy: ', accuracy)
+Y_pred = model.predict(X_test)
+accuracy = metrics.accuracy_score(Y_test, Y_pred)
+print('Accuracy: ', accuracy)
 
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
