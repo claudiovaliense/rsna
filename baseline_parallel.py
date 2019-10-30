@@ -308,13 +308,13 @@ data = []
 target = []
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
-files_train = cv.list_files(dir_train)
-files_train = files_train[0:25000]
-#files_test = files_test[0:20]
+#files_train = cv.list_files(dir_train)
+#files_train = files_train[0:50000]
+#files_test = files_test[0:1000]
 
-amount_files_train = len(files_train)
+#amount_files_train = len(files_train)
 amount_files_test = len(files_test)
-amount_files = amount_files_test
+#amount_files = amount_files_test
 n_cores = mp.cpu_count()
 
 #data_target(dir_train, '')  # features in files
@@ -325,37 +325,38 @@ ini = timeit.default_timer()
 
 #X_train, Y_train = cv.load_X_compress(files_train, id_label, '', True)
 #X_test, Y_test = cv.load_X_compress(files_test, id_label, 'teste/', True)
-
-X_train, Y_train = load_parallel(files_train, id_label, '', True)
+print('carregar treino')
+#X_train, Y_train = load_parallel(files_train, id_label, '', True)
 return_process_dict = manager.dict()
-X_test, Y_test = load_parallel(files_test, id_label, 'teste/', False) # test model, alter True
 print("Carregar dados: %f" % (timeit.default_timer() - ini))
 
 
 # '''
 # format classifier
-X_train = np.array(X_train).astype('float16')
-Y_train = np.array(Y_train).astype('float16')
-X_test = np.array(X_test).astype('float16')
+#X_train = np.array(X_train).astype('float16')
+#Y_train = np.array(Y_train).astype('float16')
+
+
+
 #Y_test = np.array(Y_test)  # teste model
 
-print("Data matrix size : {:.2f}MB".format(X_train.nbytes / (1024 * 1000.0)))
+#print("Data matrix size : {:.2f}MB".format(X_train.nbytes / (1024 * 1000.0)))
 # X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
 
 #model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
-model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1)
+#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1)
 # model = svm.SVC(kernel='rbf', gamma='scale')
 
 print("Train model")
 ini = timeit.default_timer()
-model.fit(X_train, Y_train)
+#model.fit(X_train, Y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
 # save the model to disk
 #pickle.dump(model, open(cv.name_out('./KNN.model'), 'wb'))
-joblib.dump(model, open(cv.name_out('./RandomForest.model'), 'wb'))
+#joblib.dump(model, open(cv.name_out('./RandomForest.model'), 'wb'))
 
-Y_prob = model.predict_proba(X_test)
+model = joblib.load('RandomForest.50000')
 
 #Y_pred = model.predict(X_test)
 #accuracy = metrics.accuracy_score(Y_test, Y_pred)
@@ -364,21 +365,32 @@ Y_prob = model.predict_proba(X_test)
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
 # save result in file
-with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
-    csvfile.write('ID,Label\n')
-    for doc in range(amount_files_test):
-        for classe in range(6):
-            if classe == 0:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_epidural,' + str(Y_prob[classe][doc][1]) + '\n')
-            elif classe == 1:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_intraparenchymal,' + str(Y_prob[classe][doc][1]) + '\n')
-            elif classe == 2:
-                csvfile.write(
-                    str(files_test[doc]).split('.')[0] + '_intraventricular,' + str(Y_prob[classe][doc][1]) + '\n')
-            elif classe == 3:
-                csvfile.write(
-                    str(files_test[doc]).split('.')[0] + '_subarachnoid,' + str(Y_prob[classe][doc][1]) + '\n')
-            elif classe == 4:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_subdural,' + str(Y_prob[classe][doc][1]) + '\n')
-            elif classe == 5:
-                csvfile.write(str(files_test[doc]).split('.')[0] + '_any,' + str(Y_prob[classe][doc][1]) + '\n')
+with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:                    
+        files = cv.n_list(files_test,2)
+        print('len files: ', len(files[0]))
+        csvfile.write('ID,Label\n')
+
+        for i in range(2):
+            X_test, Y_test = load_parallel(files[i], id_label, 'teste/', False) # test model, alter True           
+           # print('X_test: ', X_test )
+            X_test = np.array(X_test).astype('float16')
+           # print('X_test: ', X_test )
+
+            Y_prob = model.predict_proba(X_test)
+
+
+            for doc in range(len(files[i])):
+                for classe in range(6):
+                    if classe == 0:
+                        csvfile.write(str(files_test[doc]).split('.')[0] + '_epidural,' + str(Y_prob[classe][doc][1]) + '\n')
+                    elif classe == 1:
+                        csvfile.write(str(files_test[doc]).split('.')[0] + '_intraparenchymal,' + str(Y_prob[classe][doc][1]) + '\n')
+                    elif classe == 2:
+                        csvfile.write(str(files_test[doc]).split('.')[0] + '_intraventricular,' + str(Y_prob[classe][doc][1]) + '\n')
+                    elif classe == 3:
+                        csvfile.write( str(files_test[doc]).split('.')[0] + '_subarachnoid,' + str(Y_prob[classe][doc][1]) + '\n')
+                    elif classe == 4:
+                        csvfile.write(str(files_test[doc]).split('.')[0] + '_subdural,' + str(Y_prob[classe][doc][1]) + '\n')
+                    elif classe == 5:
+                        csvfile.write(str(files_test[doc]).split('.')[0] + '_any,' + str(Y_prob[classe][doc][1]) + '\n')
+

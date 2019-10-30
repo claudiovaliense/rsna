@@ -1,13 +1,5 @@
-tamanho 262144
-tamanho 262144
-tamanho 262144
-tamanho 262144
-tamanho 262144
-tamanho 262144
-tamanho 262144
-tamanho 262144
-Carregar dados: 1427.664318
-Traceback (most recent call last):
-  File "baseline_parallel.py", line 339, in <module>
-    X_test = np.array(X_test)
-MemoryError: Unable to allocate array with shape (78545, 262144) and data type float64
+carregar treino
+Carregar dados: 0.001699
+Train model
+Time train model: 0.000000
+len files:  39273
