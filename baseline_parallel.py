@@ -251,7 +251,7 @@ def load_parallel(files, id_label, path, test_model):
     for p in process_list:
         p.join()
 
-    for i in range(n_cores):
+    for i in range(n_cores):        
         X_core, Y_core = (return_process_dict[i])
         X.append(X_core)
         if test_model == True:
@@ -273,7 +273,7 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
     features = []
     labels = []
     for file_name in files:
-        snake = np.load(path+'features/snake/' + file_name+'.npz')['snake']
+        snake = np.load(path+'features/snake/' + file_name+'.npz')['snake'].astype('int')
         blood = np.load(path+'features/blood/' + file_name+'.npz')['blood'].astype('float16')
         hematoma = np.load(path+'features/hematoma/' + file_name+'.npz')['hematoma'].astype('float16')
         ventriculo = np.load(path+'features/ventriculo/' + file_name+'.npz')['ventriculo'].astype('float16')
@@ -281,11 +281,17 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
         white_tophat = np.load(path+'features/white_tophat/' + file_name+'.npz')['white_tophat'].astype('float16')
         #con_hem = hematoma + white_matter + ventriculo + white_tophat + blood  # combined
         con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
+        
+        
+        if len(con_hem.flatten())!= 262144:
+            con_hem =  np.zeros(262144)
+            print('tamanho', len(con_hem.flatten()))
+           
         features.append(con_hem.flatten())
 
         if test_model == True:
             y = id_label[file_name].values()
-            labels.append(np.array(list(y)).flatten().astype(('int')))  # transform dict values in array
+            labels.append(np.array(list(y)).flatten().astype(('int')))  # transform dict values in ar
 
     return_process_dict[id_core] = features, labels
 
@@ -303,7 +309,7 @@ target = []
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
-files_train = files_train[0:10000]
+files_train = files_train[0:25000]
 #files_test = files_test[0:20]
 
 amount_files_train = len(files_train)
@@ -321,16 +327,16 @@ ini = timeit.default_timer()
 #X_test, Y_test = cv.load_X_compress(files_test, id_label, 'teste/', True)
 
 X_train, Y_train = load_parallel(files_train, id_label, '', True)
+return_process_dict = manager.dict()
 X_test, Y_test = load_parallel(files_test, id_label, 'teste/', False) # test model, alter True
 print("Carregar dados: %f" % (timeit.default_timer() - ini))
 
-#print(X_train)
 
 # '''
 # format classifier
-X_train = np.array(X_train)
-Y_train = np.array(Y_train)
-X_test = np.array(X_test)
+X_train = np.array(X_train).astype('float16')
+Y_train = np.array(Y_train).astype('float16')
+X_test = np.array(X_test).astype('float16')
 #Y_test = np.array(Y_test)  # teste model
 
 print("Data matrix size : {:.2f}MB".format(X_train.nbytes / (1024 * 1000.0)))
