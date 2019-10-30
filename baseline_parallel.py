@@ -371,7 +371,8 @@ with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
         csvfile.write('ID,Label\n')
 
         for i in range(2):
-            X_test, Y_test = load_parallel(files[i], id_label, 'teste/', False) # test model, alter True           
+            files_test=files[i]
+            X_test, Y_test = load_parallel(files_test, id_label, 'teste/', False) # test model, alter True           
            # print('X_test: ', X_test )
             X_test = np.array(X_test).astype('float16')
            # print('X_test: ', X_test )
@@ -379,7 +380,7 @@ with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
             Y_prob = model.predict_proba(X_test)
 
 
-            for doc in range(len(files[i])):
+            for doc in range(len(files_test)):
                 for classe in range(6):
                     if classe == 0:
                         csvfile.write(str(files_test[doc]).split('.')[0] + '_epidural,' + str(Y_prob[classe][doc][1]) + '\n')
