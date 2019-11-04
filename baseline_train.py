@@ -38,6 +38,9 @@ from skimage.morphology import disk
 from sklearn.preprocessing import MultiLabelBinarizer
 
 import multiprocessing  # Version parallel
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_recall_fscore_support as score
+
 
 # id_label = id_label.return_id_label()
 # cv.save_dict_file('id_label', id_label)
@@ -296,9 +299,32 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
     return_process_dict[id_core] = features, labels
 
 
+def balance_train(files, amount):
+    """ Balance set normal and not normal"""
+    balance_files = []
+    count=0
+
+    for file in files:            
+        #print(count)
+        types = id_label[file]
+        if len(types)==0:            
+            print('aqui')
+            continue        
+        if types['any']==1 and len(balance_files) < amount/2:
+            balance_files.append(file)
+        elif len(balance_files) >= amount/2:                        
+            balance_files.append(file)
+        if len(balance_files) >= amount:
+            break
+        count+=1
+    print('aqui2')
+    print(count)
+    return balance_files
+    
+
 # ----------- Main
 dir_train = "../dataset/stage_1_train_images/"
-dir_test = "../dataset/stage_1_test_images/"
+#dir_test = "../dataset/stage_1_test_images/"
 manager = multiprocessing.Manager()  #parallel
 return_process_dict = manager.dict() #parallel
 
@@ -307,10 +333,15 @@ k = 3  # k of knn classifier
 data = []
 target = []
 iterations = 35  # method snake
-files_test = cv.list_files(dir_test)
-#files_train = cv.list_files(dir_train)
-#files_train = files_train[0:50000]
-#files_test = files_test[0:1000]
+#files_test = cv.list_files(dir_test)
+files_train = cv.list_files(dir_train)
+files_test = files_train[5000:5500]
+#files_train = files_train[0:500]
+files_train = balance_train(files_train, 5000)
+print(len(files_train))
+
+
+
 
 #amount_files_train = len(files_train)
 amount_files_test = len(files_test)
@@ -324,43 +355,47 @@ ini = timeit.default_timer()
 
 
 #X_train, Y_train = cv.load_X_compress(files_train, id_label, '', True)
-#X_test, Y_test = cv.load_X_compress(files_test, id_label, 'teste/', True)
+#X_test, Y_test = cv.load_X_compress(files_test, id_label, '', True)
 print('carregar treino')
-#X_train, Y_train = load_parallel(files_train, id_label, '', True)
+X_train, Y_train = load_parallel(files_train, id_label, '', True)
+X_test, Y_test = load_parallel(files_test, id_label, '', True)
+
 return_process_dict = manager.dict()
 print("Carregar dados: %f" % (timeit.default_timer() - ini))
 
-
 # '''
 # format classifier
-#X_train = np.array(X_train).astype('float16')
-#Y_train = np.array(Y_train).astype('float16')
+X_train = np.array(X_train).astype('float16')
+Y_train = np.array(Y_train).astype('float16')
+X_test = np.array(X_test).astype('float16')
+Y_test = np.array(Y_test).astype('float16')
 
-
-
-#Y_test = np.array(Y_test)  # teste model
-
-#print("Data matrix size : {:.2f}MB".format(X_train.nbytes / (1024 * 1000.0)))
-
+#print(Y_test)
 
 #model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
-model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1)
+model = RandomForestClassifier(n_estimators=100, random_state=SEED_RANDOM, n_jobs=-1)
 # model = svm.SVC(kernel='rbf', gamma='scale')
 
 print("Train model")
 ini = timeit.default_timer()
-#model.fit(X_train, Y_train)
+model.fit(X_train, Y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
 # save the model to disk
-#pickle.dump(model, open(cv.name_out('./KNN.model'), 'wb'))
 joblib.dump(model, open(cv.name_out('./RandomForest.model'), 'wb'))
+Y_pred = model.predict(X_test)
 
+#print('Y_pred: ', Y_pred)
 
+precision, recall, fscore, support = score(Y_test, Y_pred)
+print('precision: {}'.format(precision))
+print('recall: {}'.format(recall))
+print('fscore: {}'.format(fscore))
+print('support: {}'.format(support))
 
-#Y_pred = model.predict(X_test)
-#accuracy = metrics.accuracy_score(Y_test, Y_pred)
-#print('Accuracy: ', accuracy)
-
-
+#Y_pred = model.predict_proba(X_test)
+print('Accuracy: ', metrics.accuracy_score(Y_test, Y_pred))
+print('Macro f1: ', f1_score(Y_test, Y_pred, average='macro'))
+print('Micro f1: ', f1_score(Y_test, Y_pred, average='micro'))
+print('Weight f1: ', f1_score(Y_test, Y_pred, average='weighted'))
 

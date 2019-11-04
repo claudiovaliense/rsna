@@ -297,70 +297,22 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
 
 
 # ----------- Main
-dir_train = "../dataset/stage_1_train_images/"
 dir_test = "../dataset/stage_1_test_images/"
 manager = multiprocessing.Manager()  #parallel
 return_process_dict = manager.dict() #parallel
-
 
 k = 3  # k of knn classifier
 data = []
 target = []
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
-#files_train = cv.list_files(dir_train)
-#files_train = files_train[0:50000]
-#files_test = files_test[0:1000]
 
-#amount_files_train = len(files_train)
 amount_files_test = len(files_test)
-#amount_files = amount_files_test
 n_cores = mp.cpu_count()
 
-#data_target(dir_train, '')  # features in files
-#data_target(dir_test, "teste/") # rodar no server ainda
-
-ini = timeit.default_timer()
-
-
-#X_train, Y_train = cv.load_X_compress(files_train, id_label, '', True)
-#X_test, Y_test = cv.load_X_compress(files_test, id_label, 'teste/', True)
-print('carregar treino')
-#X_train, Y_train = load_parallel(files_train, id_label, '', True)
 return_process_dict = manager.dict()
-print("Carregar dados: %f" % (timeit.default_timer() - ini))
 
-
-# '''
-# format classifier
-#X_train = np.array(X_train).astype('float16')
-#Y_train = np.array(Y_train).astype('float16')
-
-
-
-#Y_test = np.array(Y_test)  # teste model
-
-#print("Data matrix size : {:.2f}MB".format(X_train.nbytes / (1024 * 1000.0)))
-# X_train, X_test, y_train, y_test = train_test_split(X, target, test_size=AMOUNT_TEST, random_state=SEED_RANDOM)
-
-#model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
-#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1)
-# model = svm.SVC(kernel='rbf', gamma='scale')
-
-print("Train model")
-ini = timeit.default_timer()
-#model.fit(X_train, Y_train)
-print("Time train model: %f" % (timeit.default_timer() - ini))
-
-# save the model to disk
-#pickle.dump(model, open(cv.name_out('./KNN.model'), 'wb'))
-#joblib.dump(model, open(cv.name_out('./RandomForest.model'), 'wb'))
-
-model = joblib.load('RandomForest.50000')
-
-#Y_pred = model.predict(X_test)
-#accuracy = metrics.accuracy_score(Y_test, Y_pred)
-#print('Accuracy: ', accuracy)
+model = joblib.load('RandomForest_04-11-2019.08-13-24.model')
 
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
@@ -372,13 +324,13 @@ with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
 
         for i in range(2):
             files_test=files[i]
-            X_test, Y_test = load_parallel(files_test, id_label, 'teste/', False) # test model, alter True           
-           # print('X_test: ', X_test )
-            X_test = np.array(X_test).astype('float16')
-           # print('X_test: ', X_test )
+            X_test, Y_test = load_parallel(files_test, id_label, 'teste/', False) # test model, alter True                      
+            X_test = np.array(X_test).astype('float16')        
 
+            print('predict')
+            ini = timeit.default_timer()
             Y_prob = model.predict_proba(X_test)
-
+            print("Time predict: %f" % (timeit.default_timer() - ini))        
 
             for doc in range(len(files_test)):
                 for classe in range(6):

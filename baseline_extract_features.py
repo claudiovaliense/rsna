@@ -39,8 +39,8 @@ from sklearn.preprocessing import MultiLabelBinarizer
 
 import multiprocessing  # Version parallel
 
-# id_label = id_label.return_id_label()
-# cv.save_dict_file('id_label', id_label)
+#id_label = id_label.return_id_label()
+#cv.save_dict_file('../id_label', id_label)
 id_label = cv.load_dict_file('../id_label')
 
 AMOUNT_TEST = 0.2
@@ -280,8 +280,8 @@ return_process_dict = manager.dict() #parallel
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
-files_train = files_train[0:200]
-files_test = files_test[0:20]
+files_train = files_train[0:50000]
+#files_test = files_test[0:20]
 
 amount_files_train = len(files_train)
 amount_files_test = len(files_test)

@@ -27,15 +27,15 @@ def return_id_label():
         for row in rows:
             if str(row[0]).__contains__('epidural') and row[1] != '0':
                 types['epidural'] = 1
-            if str(row[0]).__contains__('intraparenchymal') and row[1] != '0':
+            elif str(row[0]).__contains__('intraparenchymal') and row[1] != '0':
                 types['intraparenchymal'] = 1
-            if str(row[0]).__contains__('intraventricular') and row[1] != '0':
+            elif str(row[0]).__contains__('intraventricular') and row[1] != '0':
                 types['intraventricular'] = 1
-            if str(row[0]).__contains__('subarachnoid') and row[1] != '0':
+            elif str(row[0]).__contains__('subarachnoid') and row[1] != '0':
                 types['subarachnoid'] = 1
-            if str(row[0]).__contains__('subdural') and row[1] != '0':
+            elif str(row[0]).__contains__('subdural') and row[1] != '0':
                 types['subdural'] = 1
-            if str(row[0]).__contains__('any') and row[1] != '0':
+            elif str(row[0]).__contains__('any') and row[1] != '0':
                 types['any'] = 1
             #if str(row[0]).__contains__('any') and row[1] == '0':
              #   types['normal'] = 1

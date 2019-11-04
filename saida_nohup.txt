@@ -1,5 +1,0 @@
-carregar treino
-Carregar dados: 0.001973
-Train model
-Time train model: 0.000000
-len files:  39273
