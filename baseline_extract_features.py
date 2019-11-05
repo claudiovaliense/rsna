@@ -280,7 +280,7 @@ return_process_dict = manager.dict() #parallel
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
-files_train = files_train[0:50000]
+#files_train = files_train[0:50000]
 #files_test = files_test[0:20]
 
 amount_files_train = len(files_train)

@@ -42,8 +42,8 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import precision_recall_fscore_support as score
 
 
-# id_label = id_label.return_id_label()
-# cv.save_dict_file('id_label', id_label)
+#id_label = id_label.return_id_label()
+#cv.save_dict_file('../id_label', id_label)
 id_label = cv.load_dict_file('../id_label')
 
 AMOUNT_TEST = 0.2
@@ -255,7 +255,7 @@ def load_parallel(files, id_label, path, test_model):
         p.join()
 
     for i in range(n_cores):        
-        X_core, Y_core = (return_process_dict[i])
+        X_core, Y_core = (return_process_dict[i])        
         X.append(X_core)
         if test_model == True:
             Y.append(Y_core)
@@ -276,25 +276,31 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
     features = []
     labels = []
     for file_name in files:
-        snake = np.load(path+'features/snake/' + file_name+'.npz')['snake'].astype('int')
-        blood = np.load(path+'features/blood/' + file_name+'.npz')['blood'].astype('float16')
-        hematoma = np.load(path+'features/hematoma/' + file_name+'.npz')['hematoma'].astype('float16')
-        ventriculo = np.load(path+'features/ventriculo/' + file_name+'.npz')['ventriculo'].astype('float16')
-        white_matter = np.load(path+'features/white_matter/' + file_name+'.npz')['white_matter'].astype('float16')
-        white_tophat = np.load(path+'features/white_tophat/' + file_name+'.npz')['white_tophat'].astype('float16')
-        #con_hem = hematoma + white_matter + ventriculo + white_tophat + blood  # combined
-        con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
+        try:
+           # print('ausdioausoisudaio')
+            snake = np.load(path+'features/snake/' + file_name+'.npz')['snake'].astype('int')
+            blood = np.load(path+'features/blood/' + file_name+'.npz')['blood'].astype('float16')
+            hematoma = np.load(path+'features/hematoma/' + file_name+'.npz')['hematoma'].astype('float16')
+            ventriculo = np.load(path+'features/ventriculo/' + file_name+'.npz')['ventriculo'].astype('float16')
+            white_matter = np.load(path+'features/white_matter/' + file_name+'.npz')['white_matter'].astype('float16')
+            white_tophat = np.load(path+'features/white_tophat/' + file_name+'.npz')['white_tophat'].astype('float16')
+            #con_hem = hematoma + white_matter + ventriculo + white_tophat + blood  # combined
+           # print('aquiqqqqqqqqqqqqqqqqqq')
+            con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
         
         
-        if len(con_hem.flatten())!= 262144:
-            con_hem =  np.zeros(262144)
-            print('tamanho', len(con_hem.flatten()))
+            if len(con_hem.flatten())!= 262144:
+                con_hem =  np.zeros(262144)
+                print('tamanho', len(con_hem.flatten()))
            
-        features.append(con_hem.flatten())
+            features.append(con_hem.flatten())
 
-        if test_model == True:
-            y = id_label[file_name].values()
-            labels.append(np.array(list(y)).flatten().astype(('int')))  # transform dict values in ar
+            if test_model == True:
+                y = id_label[file_name].values()
+                labels.append(np.array(list(y)).flatten().astype(('int')))  # transform dict values in ar
+        except IOError:
+            #print('except')
+            continue
 
     return_process_dict[id_core] = features, labels
 
@@ -306,7 +312,10 @@ def balance_train(files, amount):
 
     for file in files:            
         #print(count)
+        if id_label.get(file) == None:
+            continue
         types = id_label[file]
+
         if len(types)==0:            
             print('aqui')
             continue        
@@ -333,34 +342,19 @@ k = 3  # k of knn classifier
 data = []
 target = []
 iterations = 35  # method snake
-#files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
 files_test = files_train[5000:5500]
-#files_train = files_train[0:500]
-files_train = balance_train(files_train, 5000)
-print(len(files_train))
+print('balanced train')
+files_train = balance_train(files_train, 70000)
+print('len(files_train): ', len(files_train))
 
-
-
-
-#amount_files_train = len(files_train)
 amount_files_test = len(files_test)
-#amount_files = amount_files_test
 n_cores = mp.cpu_count()
 
-#data_target(dir_train, '')  # features in files
-#data_target(dir_test, "teste/") # rodar no server ainda
-
 ini = timeit.default_timer()
-
-
-#X_train, Y_train = cv.load_X_compress(files_train, id_label, '', True)
-#X_test, Y_test = cv.load_X_compress(files_test, id_label, '', True)
 print('carregar treino')
 X_train, Y_train = load_parallel(files_train, id_label, '', True)
 X_test, Y_test = load_parallel(files_test, id_label, '', True)
-
-return_process_dict = manager.dict()
 print("Carregar dados: %f" % (timeit.default_timer() - ini))
 
 # '''
