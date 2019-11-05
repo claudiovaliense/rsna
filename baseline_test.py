@@ -312,7 +312,7 @@ n_cores = mp.cpu_count()
 
 return_process_dict = manager.dict()
 
-model = joblib.load('RandomForest_04-11-2019.08-13-24.model')
+model = joblib.load('RandomForest_05-11-2019.01-24-48.model')
 
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
@@ -324,12 +324,17 @@ with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
 
         for i in range(2):
             files_test=files[i]
-            X_test, Y_test = load_parallel(files_test, id_label, 'teste/', False) # test model, alter True                      
+            print('load data')
+            ini = timeit.default_timer()
+            X_test, Y_test = load_parallel(files_test, id_label, 'teste/', False) # test model, alter True                     
+            print("Time predict: %f" % (timeit.default_timer() - ini))        
+
             X_test = np.array(X_test).astype('float16')        
 
             print('predict')
             ini = timeit.default_timer()
             Y_prob = model.predict_proba(X_test)
+            X_test = 0 # free memory
             print("Time predict: %f" % (timeit.default_timer() - ini))        
 
             for doc in range(len(files_test)):
