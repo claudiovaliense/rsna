@@ -43,12 +43,12 @@ from sklearn.metrics import precision_recall_fscore_support as score
 from sklearn.metrics import multilabel_confusion_matrix
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
-
+from sklearn.neural_network import MLPClassifier
 
 
 id_label = id_label_lib.return_id_label()
-#cv.save_dict_file('../id_label', id_label)
-#id_label = cv.load_dict_file('../id_label')
+cv.save_dict_file('../id_label', id_label)
+id_label = cv.load_dict_file('../id_label')
 
 AMOUNT_TEST = 0.2
 SEED_RANDOM = 4
@@ -380,7 +380,7 @@ files_train = [f.replace('.npz', '') for f in files_features] # train with featu
 amount_files=0
 
 
-limit_train = 5000
+limit_train = 50000
 k = 3  # k of knn classifier
 data = []
 target = []
@@ -388,8 +388,8 @@ iterations = 35  # method snake
 #files_train = cv.list_files(dir_train)
 #files_train = list(id_label.keys())
 print('len(files_train): ', len(files_train))
-#files_test = files_train[59000:60000]
-files_test = files_train[50:60] # local machine
+files_test = files_train[59000:60000]
+#files_test = files_train[50:60] # local machine
 print('balanced train')
 #files_train = balance_train(files_train, 2000)
 balance_files = []
@@ -423,11 +423,11 @@ print('len(train): ', len(X_train), ', ', len(Y_train))
 print('len(X_test): ', len(X_test))
 print('len(Y_test): ', len(Y_test))
 
-model = KNeighborsClassifier(n_neighbors=10, n_jobs=-1, weights='distance')
+#model = KNeighborsClassifier(n_neighbors=10, n_jobs=-1, weights='distance')
 #model = RandomForestClassifier(n_estimators=100, random_state=SEED_RANDOM, n_jobs=-1)
-#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = [{0: 1, 1: 1000}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0:1, 1:60}])
+model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = [{0: 1, 1: 1000}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0:1, 1:60}])
 #model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = 'balanced')
-
+#model = MLPClassifier()
 
 
 print("Train model")

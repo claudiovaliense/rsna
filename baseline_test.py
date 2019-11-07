@@ -297,11 +297,10 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
 
 
 # ----------- Main
-dir_test = "../dataset/stage_1_test_images/"
+dir_test = "../dataset/stage_2_test_images/"
 manager = multiprocessing.Manager()  #parallel
 return_process_dict = manager.dict() #parallel
 
-k = 3  # k of knn classifier
 data = []
 target = []
 iterations = 35  # method snake
@@ -312,7 +311,7 @@ n_cores = mp.cpu_count()
 
 return_process_dict = manager.dict()
 
-model = joblib.load('RandomForest_05-11-2019.01-24-48.model')
+model = joblib.load('classifier_random_46500.model')
 
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
