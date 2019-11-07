@@ -1,0 +1,5 @@
+amount train:  752803
+Traceback (most recent call last):
+  File "baseline_extract_features.py", line 294, in <module>
+    data_target(dir_train, '', files_train)  # features in files
+NameError: name 'dir_train' is not defined

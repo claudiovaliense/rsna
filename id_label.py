@@ -5,18 +5,18 @@ import shutil  # Copy files
 file = "../dataset/stage_1_train.csv"
 folder_train = "//home/claudiovaliense/kaggle/rsna/stage_1_train_images/"
 dst = "//home/claudiovaliense/kaggle/rsna/normal"
-types = dict()
-types['epidural'] = 0
-types['intraparenchymal'] = 0
-types['intraventricular'] = 0
-types['subarachnoid'] = 0
-types['subdural'] = 0
-types['any'] = 0
-#types['normal'] = 0
 
 
 def return_id_label():
     """ Amount of subtypes"""
+    types = dict()
+    types['epidural'] = 0
+    types['intraparenchymal'] = 0
+    types['intraventricular'] = 0
+    types['subarachnoid'] = 0
+    types['subdural'] = 0
+    types['any'] = 0
+
     with open(file, 'r', newline='') as csv_reader:
         rows = csv.reader(csv_reader, quotechar=',')
         next(rows)

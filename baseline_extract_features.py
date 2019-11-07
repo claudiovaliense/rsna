@@ -199,7 +199,7 @@ def data_target(dir, label, files):
 
     #files = cv.list_files(dir)
     # files = files[0:amount_files]
-    files = cv.n_list(files, n_cores)
+    files = cv.n_list(files, n_cores)        
 
     for id_core in range(n_cores):
         t = multiprocessing.Process(target=processing_thread, args=(dir, files[id_core], label, id_core))
@@ -273,20 +273,24 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
 
 # ----------- Main
 dir_train = "../dataset/stage_1_train_images/"
-dir_test = "../dataset/stage_1_test_images/"
+files_train = list(id_label.keys())
+#dir_test = "../dataset/stage_2_test_images/"
 manager = multiprocessing.Manager()  #parallel
 return_process_dict = manager.dict() #parallel
 
 iterations = 35  # method snake
-files_test = cv.list_files(dir_test)
+#files_test = cv.list_files(dir_test)
 files_train = cv.list_files(dir_train)
+print(len(files_train))
 #files_train = files_train[0:50000]
 #files_test = files_test[0:20]
 
 amount_files_train = len(files_train)
-amount_files_test = len(files_test)
-amount_files = amount_files_train + amount_files_test
+print('amount train: ', amount_files_train)
+#amount_files_test = len(files_test)
+amount_files = amount_files_train
+#amount_files = amount_files_train + amount_files_test
 n_cores = mp.cpu_count()
 
 data_target(dir_train, '', files_train)  # features in files
-data_target(dir_test, "teste/", files_test) # rodar no server ainda
+#data_target(dir_test, "teste/", files_test) # rodar no server ainda

@@ -8,7 +8,7 @@ from skimage.segmentation import (inverse_gaussian_gradient, checkerboard_level_
 from skimage import io  # Load image file
 from sklearn.neighbors import KNeighborsClassifier  # Classificador knn
 from sklearn import svm  # Classificador SVN
-import id_label
+import id_label as id_label_lib
 import claudio_funcoes as cv
 from sklearn.model_selection import train_test_split
 from sklearn import metrics  # Checar a acuracia
@@ -40,10 +40,14 @@ from sklearn.preprocessing import MultiLabelBinarizer
 import multiprocessing  # Version parallel
 from sklearn.metrics import f1_score
 from sklearn.metrics import precision_recall_fscore_support as score
+from sklearn.metrics import multilabel_confusion_matrix
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 
 
-#id_label = id_label.return_id_label()
-#cv.save_dict_file('../id_label', id_label)
+
+id_label = id_label_lib.return_id_label()
+cv.save_dict_file('../id_label', id_label)
 id_label = cv.load_dict_file('../id_label')
 
 AMOUNT_TEST = 0.2
@@ -251,8 +255,8 @@ def load_parallel(files, id_label, path, test_model):
         process_list.append(p)
 
     # Join all the threads
-    for p in process_list:
-        p.join()
+    for pp in process_list:
+        pp.join()
 
     for i in range(n_cores):        
         X_core, Y_core = (return_process_dict[i])        
@@ -299,10 +303,14 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
                 y = id_label[file_name].values()
                 labels.append(np.array(list(y)).flatten().astype(('int')))  # transform dict values in ar
         except IOError:
-            #print('except')
+            print(file_name)
+            print('except')
             continue
 
     return_process_dict[id_core] = features, labels
+
+
+
 
 
 def balance_train(files, amount):
@@ -318,10 +326,10 @@ def balance_train(files, amount):
 
         if len(types)==0:            
             print('aqui')
-            continue        
-        if types['any']==1 and len(balance_files) < amount/2:
+            continue                      
+        elif types['any']==1 and len(balance_files) < (amount*20)/100:
             balance_files.append(file)
-        elif len(balance_files) >= amount/2:                        
+        elif len(balance_files) >= (amount*20)/100:                        
             balance_files.append(file)
         if len(balance_files) >= amount:
             break
@@ -329,7 +337,36 @@ def balance_train(files, amount):
     print('aqui2')
     print(count)
     return balance_files
-    
+
+def balance_train_type(balance_files, files, amount, type_disease):    
+    type_local = []
+    limit = (limit_train*amount)/100
+    cont = 0
+    for file in files:                        
+        types = id_label[file]
+        if len(types)==0:
+            print('sasaasads' in id_label)
+            print(id_label.get(file))
+            print(file)
+        if types[type_disease]==1 and file not in balance_files:
+            balance_files.append(file)
+            cont+=1
+        if cont >= limit:
+            break
+
+def balance_train_normal(balance_files, files, amount, type_disease):
+    type_local = []
+    limit = (limit_train*amount)/100
+    cont = 0
+    #files = files[1:]
+    for file in files:
+        types = id_label[file]
+        if types[type_disease]==0 and file not in balance_files:
+            balance_files.append(file)
+            cont+=1
+        if cont >= limit:
+            break
+
 
 # ----------- Main
 dir_train = "../dataset/stage_1_train_images/"
@@ -337,16 +374,33 @@ dir_train = "../dataset/stage_1_train_images/"
 manager = multiprocessing.Manager()  #parallel
 return_process_dict = manager.dict() #parallel
 
+dir_features = 'features/hematoma/'
+files_features = cv.list_files(dir_features)
+files_train = [f.replace('.npz', '') for f in files_features] # train with features files
 
+
+
+limit_train = 5000
 k = 3  # k of knn classifier
 data = []
 target = []
 iterations = 35  # method snake
-files_train = cv.list_files(dir_train)
-files_test = files_train[5000:5500]
-print('balanced train')
-files_train = balance_train(files_train, 70000)
+#files_train = cv.list_files(dir_train)
+#files_train = list(id_label.keys())
 print('len(files_train): ', len(files_train))
+files_test = files_train[59000:60000]
+print('balanced train')
+#files_train = balance_train(files_train, 2000)
+balance_files = []
+balance_train_type(balance_files, files_train, 10, 'epidural')
+balance_train_type(balance_files, files_train, 10, 'intraparenchymal')
+balance_train_type(balance_files, files_train, 10, 'intraventricular')
+balance_train_type(balance_files, files_train, 10, 'subarachnoid')
+balance_train_type(balance_files, files_train, 10, 'subdural')
+balance_train_normal(balance_files, files_train, 50, 'any')
+files_train = balance_files
+print('len(files_test: ', len(files_train))
+
 
 amount_files_test = len(files_test)
 n_cores = mp.cpu_count()
@@ -361,14 +415,19 @@ print("Carregar dados: %f" % (timeit.default_timer() - ini))
 # format classifier
 X_train = np.array(X_train).astype('float16')
 Y_train = np.array(Y_train).astype('float16')
-X_test = np.array(X_test).astype('float16')
-Y_test = np.array(Y_test).astype('float16')
+X_test = np.array(X_test)
+Y_test = np.array(Y_test)
 
-#print(Y_test)
+print('len(train): ', len(X_train), ', ', len(Y_train)) 
+print('len(X_test): ', len(X_test))
+print('len(Y_test): ', len(Y_test))
 
-#model = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
-model = RandomForestClassifier(n_estimators=100, random_state=SEED_RANDOM, n_jobs=-1)
-# model = svm.SVC(kernel='rbf', gamma='scale')
+model = KNeighborsClassifier(n_neighbors=10, n_jobs=-1, weights='distance')
+#model = RandomForestClassifier(n_estimators=100, random_state=SEED_RANDOM, n_jobs=-1)
+#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = [{0: 1, 1: 1000}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0:1, 1:60}])
+#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = 'balanced')
+
+
 
 print("Train model")
 ini = timeit.default_timer()
@@ -376,7 +435,7 @@ model.fit(X_train, Y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
 # save the model to disk
-joblib.dump(model, open(cv.name_out('./RandomForest.model'), 'wb'))
+joblib.dump(model, open(cv.name_out('./knn.model'), 'wb'))
 Y_pred = model.predict(X_test)
 
 #print('Y_pred: ', Y_pred)
@@ -392,4 +451,7 @@ print('Accuracy: ', metrics.accuracy_score(Y_test, Y_pred))
 print('Macro f1: ', f1_score(Y_test, Y_pred, average='macro'))
 print('Micro f1: ', f1_score(Y_test, Y_pred, average='micro'))
 print('Weight f1: ', f1_score(Y_test, Y_pred, average='weighted'))
+print(multilabel_confusion_matrix(Y_test, Y_pred))
+#print(classification_report(Y_test, Y_pred))
+
 
