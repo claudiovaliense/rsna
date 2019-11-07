@@ -47,8 +47,8 @@ from sklearn.metrics import classification_report
 
 
 id_label = id_label_lib.return_id_label()
-cv.save_dict_file('../id_label', id_label)
-id_label = cv.load_dict_file('../id_label')
+#cv.save_dict_file('../id_label', id_label)
+#id_label = cv.load_dict_file('../id_label')
 
 AMOUNT_TEST = 0.2
 SEED_RANDOM = 4
@@ -338,16 +338,15 @@ def balance_train(files, amount):
     print(count)
     return balance_files
 
-def balance_train_type(balance_files, files, amount, type_disease):    
-    type_local = []
+def balance_train_type(balance_files, files, amount, type_disease):
     limit = (limit_train*amount)/100
     cont = 0
-    for file in files:                        
-        types = id_label[file]
-        if len(types)==0:
-            print('sasaasads' in id_label)
-            print(id_label.get(file))
-            print(file)
+    for file in files:
+
+        types = id_label.get(file)
+        if types==None:
+            print("file not found: ", file)
+            continue
         if types[type_disease]==1 and file not in balance_files:
             balance_files.append(file)
             cont+=1
@@ -355,12 +354,13 @@ def balance_train_type(balance_files, files, amount, type_disease):
             break
 
 def balance_train_normal(balance_files, files, amount, type_disease):
-    type_local = []
     limit = (limit_train*amount)/100
     cont = 0
-    #files = files[1:]
     for file in files:
-        types = id_label[file]
+        types = id_label.get(file)
+        if types == None:
+            print("file not found: ", file)
+            continue
         if types[type_disease]==0 and file not in balance_files:
             balance_files.append(file)
             cont+=1
@@ -377,7 +377,7 @@ return_process_dict = manager.dict() #parallel
 dir_features = 'features/hematoma/'
 files_features = cv.list_files(dir_features)
 files_train = [f.replace('.npz', '') for f in files_features] # train with features files
-
+amount_files=0
 
 
 limit_train = 5000
@@ -388,7 +388,8 @@ iterations = 35  # method snake
 #files_train = cv.list_files(dir_train)
 #files_train = list(id_label.keys())
 print('len(files_train): ', len(files_train))
-files_test = files_train[59000:60000]
+#files_test = files_train[59000:60000]
+files_test = files_train[50:60] # local machine
 print('balanced train')
 #files_train = balance_train(files_train, 2000)
 balance_files = []

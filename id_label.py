@@ -23,7 +23,6 @@ def return_id_label():
 
         id_types=dict()
         cont=0
-        types = dict()
         for row in rows:
             if str(row[0]).__contains__('epidural') and row[1] != '0':
                 types['epidural'] = 1
