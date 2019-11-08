@@ -311,17 +311,18 @@ n_cores = mp.cpu_count()
 
 return_process_dict = manager.dict()
 
-model = joblib.load('classifier_random_46500.model')
+model = joblib.load('classifier.model')
 
 # amount_files_test = 78545
 # imprime todas as probabilidades das classes por documento
 # save result in file
+divide_train=100
 with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:                    
-        files = cv.n_list(files_test,2)
+        files = cv.n_list(files_test,divide_train)
         print('len files: ', len(files[0]))
         csvfile.write('ID,Label\n')
 
-        for i in range(2):
+        for i in range(divide_train):
             files_test=files[i]
             print('load data')
             ini = timeit.default_timer()

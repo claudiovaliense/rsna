@@ -380,7 +380,7 @@ files_train = [f.replace('.npz', '') for f in files_features] # train with featu
 amount_files=0
 
 
-limit_train = 50000
+limit_train = 10000
 k = 3  # k of knn classifier
 data = []
 target = []
@@ -393,12 +393,12 @@ files_test = files_train[59000:60000]
 print('balanced train')
 #files_train = balance_train(files_train, 2000)
 balance_files = []
-balance_train_type(balance_files, files_train, 10, 'epidural')
-balance_train_type(balance_files, files_train, 10, 'intraparenchymal')
-balance_train_type(balance_files, files_train, 10, 'intraventricular')
-balance_train_type(balance_files, files_train, 10, 'subarachnoid')
-balance_train_type(balance_files, files_train, 10, 'subdural')
-balance_train_normal(balance_files, files_train, 50, 'any')
+balance_train_type(balance_files, files_train, 8, 'epidural')
+balance_train_type(balance_files, files_train, 8, 'intraparenchymal')
+balance_train_type(balance_files, files_train, 8, 'intraventricular')
+balance_train_type(balance_files, files_train, 8, 'subarachnoid')
+balance_train_type(balance_files, files_train, 8, 'subdural')
+balance_train_normal(balance_files, files_train, 60, 'any')
 files_train = balance_files
 print('len(files_test: ', len(files_train))
 
@@ -425,7 +425,7 @@ print('len(Y_test): ', len(Y_test))
 
 #model = KNeighborsClassifier(n_neighbors=10, n_jobs=-1, weights='distance')
 #model = RandomForestClassifier(n_estimators=100, random_state=SEED_RANDOM, n_jobs=-1)
-model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = [{0: 1, 1: 1000}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0:1, 1:60}])
+model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = [{0: 1, 1: 1000}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0:1, 1:5}])
 #model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = 'balanced')
 #model = MLPClassifier()
 
@@ -436,7 +436,8 @@ model.fit(X_train, Y_train)
 print("Time train model: %f" % (timeit.default_timer() - ini))
 
 # save the model to disk
-joblib.dump(model, open(cv.name_out('./knn.model'), 'wb'))
+#joblib.dump(model, open(cv.name_out('./knn.model'), 'wb'))
+joblib.dump(model, open('classifier.model', 'wb'))
 Y_pred = model.predict(X_test)
 
 #print('Y_pred: ', Y_pred)
