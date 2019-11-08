@@ -44,10 +44,12 @@ from sklearn.metrics import multilabel_confusion_matrix
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.tree import DecisionTreeClassifier
 
-
-id_label = id_label_lib.return_id_label()
-cv.save_dict_file('../id_label', id_label)
+#id_label = id_label_lib.return_id_label()
+#cv.save_dict_file('../id_label', id_label)
 id_label = cv.load_dict_file('../id_label')
 
 AMOUNT_TEST = 0.2
@@ -290,8 +292,8 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
             white_tophat = np.load(path+'features/white_tophat/' + file_name+'.npz')['white_tophat'].astype('float16')
             #con_hem = hematoma + white_matter + ventriculo + white_tophat + blood  # combined
            # print('aquiqqqqqqqqqqqqqqqqqq')
-            con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
-        
+            #con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
+            con_hem = snake + hematoma + white_matter + ventriculo + blood
         
             if len(con_hem.flatten())!= 262144:
                 con_hem =  np.zeros(262144)
@@ -380,7 +382,7 @@ files_train = [f.replace('.npz', '') for f in files_features] # train with featu
 amount_files=0
 
 
-limit_train = 10000
+limit_train = 50000
 k = 3  # k of knn classifier
 data = []
 target = []
@@ -388,17 +390,17 @@ iterations = 35  # method snake
 #files_train = cv.list_files(dir_train)
 #files_train = list(id_label.keys())
 print('len(files_train): ', len(files_train))
-files_test = files_train[59000:60000]
+files_test = files_train[60000:61000]
 #files_test = files_train[50:60] # local machine
 print('balanced train')
 #files_train = balance_train(files_train, 2000)
 balance_files = []
-balance_train_type(balance_files, files_train, 8, 'epidural')
-balance_train_type(balance_files, files_train, 8, 'intraparenchymal')
-balance_train_type(balance_files, files_train, 8, 'intraventricular')
-balance_train_type(balance_files, files_train, 8, 'subarachnoid')
-balance_train_type(balance_files, files_train, 8, 'subdural')
-balance_train_normal(balance_files, files_train, 60, 'any')
+balance_train_type(balance_files, files_train, 10, 'epidural')
+balance_train_type(balance_files, files_train, 10, 'intraparenchymal')
+balance_train_type(balance_files, files_train, 10, 'intraventricular')
+balance_train_type(balance_files, files_train, 10, 'subarachnoid')
+balance_train_type(balance_files, files_train, 10, 'subdural')
+balance_train_normal(balance_files, files_train, 50, 'any')
 files_train = balance_files
 print('len(files_test: ', len(files_train))
 
@@ -423,12 +425,21 @@ print('len(train): ', len(X_train), ', ', len(Y_train))
 print('len(X_test): ', len(X_test))
 print('len(Y_test): ', len(Y_test))
 
-#model = KNeighborsClassifier(n_neighbors=10, n_jobs=-1, weights='distance')
+#model = KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
 #model = RandomForestClassifier(n_estimators=100, random_state=SEED_RANDOM, n_jobs=-1)
-model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = [{0: 1, 1: 1000}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0:1, 1:5}])
-#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = 'balanced')
+model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = [{0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 444400}, {0:1, 1:10}])
+#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = 'balanced_subsample')
 #model = MLPClassifier()
+#model =  ExtraTreesClassifier(n_estimators=10, max_features=120, n_jobs=-1, random_state=SEED_RANDOM, class_weight = [{0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 444400}, {0:1, 1:10}])
 
+#model = DecisionTreeClassifier(random_state=SEED_RANDOM, class_weight = [{0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 444400}, {0:1, 1:10}])
+
+# best param svm
+'''tuned_parameters = [{'n_estimators': [10,20,50,10]}]
+model = GridSearchCV(model_en, tuned_parameters, scoring='f1_macro')
+model.fit(X_train, Y_train)
+best_param = model.best_params_
+print(best_param)'''
 
 print("Train model")
 ini = timeit.default_timer()
@@ -438,9 +449,19 @@ print("Time train model: %f" % (timeit.default_timer() - ini))
 # save the model to disk
 #joblib.dump(model, open(cv.name_out('./knn.model'), 'wb'))
 joblib.dump(model, open('classifier.model', 'wb'))
-Y_pred = model.predict(X_test)
+'''Y_pred = model.predict(X_test)
+print('Y_pred: ', Y_pred)
 
-#print('Y_pred: ', Y_pred)
+for y in Y_pred:
+    sum=0
+    for index in range(5):
+        sum += y[index]
+    if sum != 0:
+        y[5]=1
+    else:
+        y[5]=0
+
+print('Y_pred: ', Y_pred)
 
 precision, recall, fscore, support = score(Y_test, Y_pred)
 print('precision: {}'.format(precision))
@@ -456,4 +477,4 @@ print('Weight f1: ', f1_score(Y_test, Y_pred, average='weighted'))
 print(multilabel_confusion_matrix(Y_test, Y_pred))
 #print(classification_report(Y_test, Y_pred))
 
-
+'''

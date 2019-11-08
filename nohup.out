@@ -48738,3 +48738,34 @@ Traceback (most recent call last):
   File "/usr/lib/python3.6/multiprocessing/managers.py", line 772, in _callmethod
     raise convert_to_error(kind, result)
 KeyError: 0
+README.md
+RandomForest.50000
+__pycache__
+backup
+baseline1.py
+baseline_extract_features.py
+baseline_parallel.py
+baseline_test.py
+baseline_train.py
+classifier_random_46500.model
+claudio_funcoes.py
+f1_RandomForest
+features
+features_estrutura
+final_result_04-11-2019.08-19-08.csv
+final_result_05-11-2019.01-29-24.csv
+final_result_07-11-2019.06-50-06.csv
+id_label.py
+lib.py
+main.py
+multiosu.py
+nohup.out
+plot_attribute_operators.py
+plot_circular_elliptical_hough_transform.py
+plot_extrema.py
+plot_local_otsu.py
+plot_multiotsu.py
+plot_regional_maxima.py
+saida.txt
+saida_train.txt
+teste

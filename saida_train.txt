@@ -1,0 +1,34 @@
+len(files_train):  351858
+balanced train
+file not found:  estrutura
+file not found:  estrutura
+file not found:  estrutura
+file not found:  estrutura
+file not found:  estrutura
+file not found:  estrutura
+len(files_test:  46453
+carregar treino
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144

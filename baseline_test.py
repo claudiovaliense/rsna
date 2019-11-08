@@ -334,6 +334,16 @@ with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
             print('predict')
             ini = timeit.default_timer()
             Y_prob = model.predict_proba(X_test)
+
+            for doc in range(len(files_test)):
+                sum=0
+                for classe in range(5):
+                    sum += Y_prob[classe][doc][1]
+                if sum < 1:
+                    Y_prob[5][doc][1]=sum
+                else:
+                    Y_prob[5][doc][1]=0.9
+
             X_test = 0 # free memory
             print("Time predict: %f" % (timeit.default_timer() - ini))        
 
