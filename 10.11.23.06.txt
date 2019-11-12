@@ -1,0 +1,472 @@
+len(files_train):  351858
+balanced train
+file not found:  estrutura
+epidural 1453
+file not found:  estrutura
+intraparenchymal 5000
+file not found:  estrutura
+intraventricular 5000
+file not found:  estrutura
+subarachnoid 5000
+file not found:  estrutura
+subdural 5000
+file not found:  estrutura
+any 25000
+len(files_test:  46453
+carregar treino
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+tamanho 262144
+Carregar dados: 168.818716
+len(train):  46453 ,  46453
+len(X_test):  2000
+len(Y_test):  2000
+Train model
+Time train model: 77.841003
+precision: [1.         0.96969697 0.96296296 0.85882353 0.925      0.91156463]
+recall: [0.5        0.88073394 0.92857143 0.8902439  0.91735537 0.91156463]
+fscore: [0.66666667 0.92307692 0.94545455 0.8742515  0.92116183 0.91156463]
+support: [  4 109  84  82 121 294]
+Accuracy:  0.968
+Macro f1:  0.8736960139634341
+Micro f1:  0.9134545454545454
+Weight f1:  0.9133277186852841
+[[[1996    0]
+  [   2    2]]
+
+ [[1888    3]
+  [  13   96]]
+
+ [[1913    3]
+  [   6   78]]
+
+ [[1906   12]
+  [   9   73]]
+
+ [[1870    9]
+  [  10  111]]
+
+ [[1680   26]
+  [  26  268]]]
+len files:  1213
+load data
+Time predict: 12.322018
+predict
+Time predict: 1.740819
+load data
+Time predict: 10.962014
+predict
+Time predict: 1.677344
+load data
+Time predict: 10.770053
+predict
+Time predict: 1.680525
+load data
+Time predict: 10.341665
+predict
+Time predict: 1.683569
+load data
+Time predict: 9.817769
+predict
+Time predict: 1.678448
+load data
+Time predict: 11.096653
+predict
+Time predict: 1.676329
+load data
+Time predict: 10.419332
+predict
+Time predict: 1.681993
+load data
+Time predict: 10.084464
+predict
+Time predict: 1.668268
+load data
+Time predict: 9.987595
+predict
+Time predict: 1.684311
+load data
+Time predict: 10.944864
+predict
+Time predict: 1.670991
+load data
+Time predict: 10.855308
+predict
+Time predict: 1.677809
+load data
+Time predict: 9.792879
+predict
+Time predict: 1.671605
+load data
+Time predict: 9.871590
+predict
+Time predict: 1.682089
+load data
+Time predict: 10.148155
+predict
+Time predict: 1.730408
+load data
+Time predict: 10.153795
+predict
+Time predict: 1.680202
+load data
+Time predict: 10.259982
+predict
+Time predict: 1.675382
+load data
+Time predict: 10.128412
+predict
+Time predict: 1.676679
+load data
+Time predict: 9.984021
+predict
+Time predict: 1.725442
+load data
+Time predict: 10.524964
+predict
+Time predict: 1.683978
+load data
+Time predict: 10.612317
+predict
+Time predict: 1.679779
+load data
+Time predict: 10.223843
+predict
+Time predict: 1.695603
+load data
+Time predict: 10.163987
+predict
+Time predict: 1.687592
+load data
+Time predict: 10.786318
+predict
+Time predict: 1.689388
+load data
+Time predict: 10.317377
+predict
+Time predict: 1.680142
+load data
+Time predict: 10.042122
+predict
+Time predict: 1.680833
+load data
+Time predict: 9.689311
+predict
+Time predict: 1.739673
+load data
+Time predict: 10.744827
+predict
+Time predict: 1.630301
+load data
+Time predict: 10.742293
+predict
+Time predict: 1.449721
+load data
+Time predict: 10.800504
+predict
+Time predict: 1.473007
+load data
+Time predict: 10.389752
+predict
+Time predict: 1.525881
+load data
+Time predict: 10.736200
+predict
+Time predict: 1.485294
+load data
+Time predict: 10.510065
+predict
+Time predict: 1.449622
+load data
+Time predict: 10.563878
+predict
+Time predict: 1.452433
+load data
+Time predict: 10.562751
+predict
+Time predict: 1.445847
+load data
+Time predict: 10.532615
+predict
+Time predict: 1.488558
+load data
+Time predict: 10.998671
+predict
+Time predict: 1.442043
+load data
+Time predict: 10.435249
+predict
+Time predict: 1.590057
+load data
+Time predict: 10.540403
+predict
+Time predict: 1.440573
+load data
+Time predict: 10.492060
+predict
+Time predict: 1.682868
+load data
+Time predict: 10.570988
+predict
+Time predict: 1.559448
+load data
+Time predict: 10.677133
+predict
+Time predict: 1.443879
+load data
+Time predict: 10.775712
+predict
+Time predict: 1.617935
+load data
+Time predict: 10.476465
+predict
+Time predict: 1.460623
+load data
+Time predict: 10.648903
+predict
+Time predict: 1.500530
+load data
+Time predict: 10.594632
+predict
+Time predict: 1.476790
+load data
+Time predict: 11.077737
+predict
+Time predict: 1.457256
+load data
+Time predict: 10.847325
+predict
+Time predict: 1.580312
+load data
+Time predict: 10.502529
+predict
+Time predict: 1.608216
+load data
+Time predict: 10.828305
+predict
+Time predict: 1.445701
+load data
+Time predict: 10.569502
+predict
+Time predict: 1.448439
+load data
+Time predict: 10.513524
+predict
+Time predict: 1.464742
+load data
+Time predict: 10.389538
+predict
+Time predict: 1.464553
+load data
+Time predict: 10.489695
+predict
+Time predict: 1.510104
+load data
+Time predict: 10.280384
+predict
+Time predict: 1.440325
+load data
+Time predict: 10.398029
+predict
+Time predict: 1.443195
+load data
+Time predict: 10.355109
+predict
+Time predict: 1.437834
+load data
+Time predict: 10.279840
+predict
+Time predict: 1.464029
+load data
+Time predict: 10.409248
+predict
+Time predict: 1.554484
+load data
+Time predict: 10.425818
+predict
+Time predict: 1.440082
+load data
+Time predict: 10.426768
+predict
+Time predict: 1.454374
+load data
+Time predict: 10.448190
+predict
+Time predict: 1.441082
+load data
+Time predict: 10.659122
+predict
+Time predict: 1.446413
+load data
+Time predict: 10.287655
+predict
+Time predict: 1.456328
+load data
+Time predict: 10.085248
+predict
+Time predict: 1.462918
+load data
+Time predict: 10.074206
+predict
+Time predict: 1.522351
+load data
+Time predict: 10.218282
+predict
+Time predict: 1.479991
+load data
+Time predict: 10.184841
+predict
+Time predict: 1.445322
+load data
+Time predict: 10.182439
+predict
+Time predict: 1.437562
+load data
+Time predict: 10.101253
+predict
+Time predict: 1.486846
+load data
+Time predict: 10.062704
+predict
+Time predict: 1.589961
+load data
+Time predict: 10.268176
+predict
+Time predict: 1.512461
+load data
+Time predict: 10.025029
+predict
+Time predict: 1.443532
+load data
+Time predict: 10.327828
+predict
+Time predict: 1.444854
+load data
+Time predict: 10.129775
+predict
+Time predict: 1.589988
+load data
+Time predict: 10.239866
+predict
+Time predict: 1.496090
+load data
+Time predict: 10.036538
+predict
+Time predict: 1.439284
+load data
+Time predict: 10.165573
+predict
+Time predict: 1.455324
+load data
+Time predict: 10.120789
+predict
+Time predict: 1.465133
+load data
+Time predict: 10.122782
+predict
+Time predict: 1.460974
+load data
+Time predict: 9.977392
+predict
+Time predict: 1.432437
+load data
+Time predict: 10.071795
+predict
+Time predict: 1.438698
+load data
+Time predict: 10.063412
+predict
+Time predict: 1.442822
+load data
+Time predict: 10.001857
+predict
+Time predict: 1.440163
+load data
+Time predict: 9.864584
+predict
+Time predict: 1.496970
+load data
+Time predict: 10.249255
+predict
+Time predict: 1.440531
+load data
+Time predict: 10.282146
+predict
+Time predict: 1.576752
+load data
+Time predict: 10.402735
+predict
+Time predict: 1.558876
+load data
+Time predict: 10.039860
+predict
+Time predict: 1.539152
+load data
+Time predict: 10.266897
+predict
+Time predict: 1.440873
+load data
+Time predict: 10.039722
+predict
+Time predict: 1.457607
+load data
+Time predict: 10.191876
+predict
+Time predict: 1.451879
+load data
+Time predict: 10.032446
+predict
+Time predict: 1.441028
+load data
+Time predict: 10.359828
+predict
+Time predict: 1.545402
+load data
+Time predict: 10.264649
+predict
+Time predict: 1.434546
+load data
+Time predict: 9.892748
+predict
+Time predict: 1.485050
+load data
+Time predict: 9.850413
+predict
+Time predict: 1.477324
+load data
+Time predict: 9.788644
+predict
+Time predict: 1.455681
+load data
+Time predict: 9.897400
+predict
+Time predict: 1.485304
+load data
+Time predict: 9.838334
+predict
+Time predict: 1.441822
+load data
+Time predict: 10.018853
+predict
+Time predict: 1.475363

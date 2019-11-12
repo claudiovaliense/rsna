@@ -280,7 +280,7 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
         white_matter = np.load(path+'features/white_matter/' + file_name+'.npz')['white_matter'].astype('float16')
         white_tophat = np.load(path+'features/white_tophat/' + file_name+'.npz')['white_tophat'].astype('float16')
         #con_hem = hematoma + white_matter + ventriculo + white_tophat + blood  # combined
-        con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
+        con_hem = snake + hematoma + white_matter + ventriculo + blood  # combined
         
         
         if len(con_hem.flatten())!= 262144:
@@ -295,6 +295,16 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
 
     return_process_dict[id_core] = features, labels
 
+def prob_any(epi, intrap, intraven, subar, subdur):
+    z_um = epi + intrap + intraven + subar + subdur
+    z_dois = (epi*intrap) + (epi*intraven) + (epi*subar) + (epi*subdur) + (intrap*intraven) + (intrap*subar) + (intrap*subdur) + (intraven*subar) + (intraven*subdur) + (subar*subdur)
+    z_tres = (epi*intrap*intraven) + (epi*intrap*subar) + (epi*intrap*subdur) + (epi*intraven*subar) + (epi*intraven*subdur) + (epi*subar*subdur) + (intrap*intraven*subar) + (intrap*intraven*subdur) + (intrap*subar*subdur) + (intraven*subar*subdur)
+    z_quat = (epi*intrap*intraven*subar) + (epi*intrap*intraven*subdur) + (epi*intrap*subar*subdur) + (epi*intraven*subar*subdur) + (intrap*intraven*subar*subdur)
+    z_cinc = epi*intrap*intraven*subar*subdur
+    #print(z_cinc)
+    pany = z_um - z_dois + z_tres - z_quat + z_cinc
+    return(pany)
+
 
 # ----------- Main
 dir_test = "../dataset/stage_2_test_images/"
@@ -305,6 +315,7 @@ data = []
 target = []
 iterations = 35  # method snake
 files_test = cv.list_files(dir_test)
+#files_test = files_test[1:100]
 
 amount_files_test = len(files_test)
 n_cores = mp.cpu_count()
@@ -335,14 +346,19 @@ with open(cv.name_out('./final_result.csv'), 'w', newline='') as csvfile:
             ini = timeit.default_timer()
             Y_prob = model.predict_proba(X_test)
 
+
+
             for doc in range(len(files_test)):
+                #Y_prob[5][doc][1]=prob_any(Y_prob[0][doc][1], Y_prob[1][doc][1],Y_prob[2][doc][1],Y_prob[3][doc][1],Y_prob[4][doc][1])
                 sum=0
                 for classe in range(5):
                     sum += Y_prob[classe][doc][1]
-                if sum < 1:
-                    Y_prob[5][doc][1]=sum
+                if sum < 0.2:
+                    Y_prob[5][doc][1]=0
+                elif sum < 1:
+                    Y_prob[5][doc][1]=sum                    
                 else:
-                    Y_prob[5][doc][1]=0.9
+                   Y_prob[5][doc][1]=1
 
             X_test = 0 # free memory
             print("Time predict: %f" % (timeit.default_timer() - ini))        

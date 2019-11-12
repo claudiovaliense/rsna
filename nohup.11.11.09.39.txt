@@ -1,0 +1,401 @@
+len files:  1213
+load data
+Time predict: 10.549589
+predict
+Time predict: 1.552111
+load data
+Time predict: 10.532848
+predict
+Time predict: 1.554258
+load data
+Time predict: 9.804252
+predict
+Time predict: 1.553510
+load data
+Time predict: 10.053901
+predict
+Time predict: 1.550213
+load data
+Time predict: 10.098020
+predict
+Time predict: 1.551058
+load data
+Time predict: 9.790388
+predict
+Time predict: 1.566178
+load data
+Time predict: 10.243901
+predict
+Time predict: 1.540486
+load data
+Time predict: 10.129195
+predict
+Time predict: 1.554319
+load data
+Time predict: 9.884229
+predict
+Time predict: 1.553496
+load data
+Time predict: 9.583287
+predict
+Time predict: 1.586783
+load data
+Time predict: 10.265562
+predict
+Time predict: 1.543515
+load data
+Time predict: 9.988711
+predict
+Time predict: 1.557631
+load data
+Time predict: 9.820706
+predict
+Time predict: 1.546780
+load data
+Time predict: 10.210301
+predict
+Time predict: 1.549193
+load data
+Time predict: 9.847163
+predict
+Time predict: 1.550987
+load data
+Time predict: 9.535442
+predict
+Time predict: 1.547134
+load data
+Time predict: 10.389782
+predict
+Time predict: 1.546202
+load data
+Time predict: 10.073690
+predict
+Time predict: 1.545353
+load data
+Time predict: 9.820123
+predict
+Time predict: 1.547515
+load data
+Time predict: 9.804757
+predict
+Time predict: 1.548063
+load data
+Time predict: 10.046165
+predict
+Time predict: 1.554525
+load data
+Time predict: 9.575094
+predict
+Time predict: 1.561326
+load data
+Time predict: 9.849804
+predict
+Time predict: 1.553793
+load data
+Time predict: 10.608551
+predict
+Time predict: 1.554222
+load data
+Time predict: 10.657082
+predict
+Time predict: 1.541479
+load data
+Time predict: 10.059578
+predict
+Time predict: 1.547858
+load data
+Time predict: 9.860605
+predict
+Time predict: 1.551684
+load data
+Time predict: 9.983846
+predict
+Time predict: 1.555351
+load data
+Time predict: 9.692372
+predict
+Time predict: 1.543428
+load data
+Time predict: 10.012586
+predict
+Time predict: 1.549734
+load data
+Time predict: 9.991688
+predict
+Time predict: 1.543782
+load data
+Time predict: 9.791667
+predict
+Time predict: 1.544333
+load data
+Time predict: 10.184344
+predict
+Time predict: 1.542252
+load data
+Time predict: 10.996487
+predict
+Time predict: 1.546262
+load data
+Time predict: 10.312214
+predict
+Time predict: 1.571990
+load data
+Time predict: 9.877458
+predict
+Time predict: 1.543243
+load data
+Time predict: 10.116430
+predict
+Time predict: 1.547902
+load data
+Time predict: 10.424983
+predict
+Time predict: 1.540546
+load data
+Time predict: 9.736788
+predict
+Time predict: 1.539618
+load data
+Time predict: 9.713636
+predict
+Time predict: 1.546634
+load data
+Time predict: 9.852060
+predict
+Time predict: 1.540219
+load data
+Time predict: 9.837274
+predict
+Time predict: 1.544575
+load data
+Time predict: 9.793689
+predict
+Time predict: 1.543560
+load data
+Time predict: 10.131237
+predict
+Time predict: 1.543069
+load data
+Time predict: 9.879829
+predict
+Time predict: 1.545476
+load data
+Time predict: 9.782105
+predict
+Time predict: 1.554790
+load data
+Time predict: 9.943750
+predict
+Time predict: 1.541523
+load data
+Time predict: 9.911989
+predict
+Time predict: 1.541909
+load data
+Time predict: 9.955935
+predict
+Time predict: 1.548447
+load data
+Time predict: 9.750991
+predict
+Time predict: 1.550860
+load data
+Time predict: 10.004891
+predict
+Time predict: 1.546363
+load data
+Time predict: 9.770440
+predict
+Time predict: 1.543877
+load data
+Time predict: 9.920791
+predict
+Time predict: 1.546942
+load data
+Time predict: 9.606681
+predict
+Time predict: 1.545974
+load data
+Time predict: 9.846825
+predict
+Time predict: 1.545832
+load data
+Time predict: 9.841663
+predict
+Time predict: 1.542609
+load data
+Time predict: 10.116323
+predict
+Time predict: 1.552129
+load data
+Time predict: 10.214385
+predict
+Time predict: 1.543918
+load data
+Time predict: 10.376660
+predict
+Time predict: 1.542472
+load data
+Time predict: 9.904672
+predict
+Time predict: 1.542682
+load data
+Time predict: 10.641269
+predict
+Time predict: 1.544215
+load data
+Time predict: 10.750311
+predict
+Time predict: 1.560396
+load data
+Time predict: 11.001553
+predict
+Time predict: 1.547435
+load data
+Time predict: 10.602812
+predict
+Time predict: 1.545595
+load data
+Time predict: 10.872049
+predict
+Time predict: 1.544046
+load data
+Time predict: 10.828978
+predict
+Time predict: 1.543554
+load data
+Time predict: 10.547466
+predict
+Time predict: 1.540973
+load data
+Time predict: 10.645452
+predict
+Time predict: 1.557438
+load data
+Time predict: 11.046871
+predict
+Time predict: 1.550347
+load data
+Time predict: 10.703063
+predict
+Time predict: 1.546600
+load data
+Time predict: 10.882411
+predict
+Time predict: 1.547459
+load data
+Time predict: 10.800880
+predict
+Time predict: 1.540603
+load data
+Time predict: 10.728440
+predict
+Time predict: 1.542209
+load data
+Time predict: 10.765254
+predict
+Time predict: 1.550362
+load data
+Time predict: 10.678860
+predict
+Time predict: 1.542967
+load data
+Time predict: 10.467270
+predict
+Time predict: 1.544570
+load data
+Time predict: 10.786497
+predict
+Time predict: 1.552006
+load data
+Time predict: 10.875180
+predict
+Time predict: 1.540561
+load data
+Time predict: 10.630982
+predict
+Time predict: 1.539915
+load data
+Time predict: 10.676505
+predict
+Time predict: 1.542956
+load data
+Time predict: 10.993288
+predict
+Time predict: 1.539953
+load data
+Time predict: 10.463072
+predict
+Time predict: 1.542041
+load data
+Time predict: 10.724602
+predict
+Time predict: 1.560723
+load data
+Time predict: 10.974408
+predict
+Time predict: 1.541304
+load data
+Time predict: 10.729135
+predict
+Time predict: 1.543892
+load data
+Time predict: 10.994498
+predict
+Time predict: 1.548324
+load data
+Time predict: 10.758332
+predict
+Time predict: 1.546232
+load data
+Time predict: 10.626963
+predict
+Time predict: 1.540184
+load data
+Time predict: 10.726844
+predict
+Time predict: 1.550998
+load data
+Time predict: 10.902334
+predict
+Time predict: 1.541337
+load data
+Time predict: 10.612315
+predict
+Time predict: 1.538704
+load data
+Time predict: 10.684124
+predict
+Time predict: 1.552526
+load data
+Time predict: 10.627930
+predict
+Time predict: 1.539642
+load data
+Time predict: 10.887083
+predict
+Time predict: 1.541384
+load data
+Time predict: 10.687542
+predict
+Time predict: 1.545491
+load data
+Time predict: 10.849048
+predict
+Time predict: 1.548235
+load data
+Time predict: 10.824746
+predict
+Time predict: 1.541723
+load data
+Time predict: 10.947206
+predict
+Time predict: 1.549740
+load data
+Time predict: 10.907377
+predict
+Time predict: 1.590757
+load data
+Time predict: 11.091807
+predict
+Time predict: 1.541766

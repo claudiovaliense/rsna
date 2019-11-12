@@ -289,11 +289,26 @@ def load_X_compress_parallel(files, id_label, path, test_model, id_core):
             hematoma = np.load(path+'features/hematoma/' + file_name+'.npz')['hematoma'].astype('float16')
             ventriculo = np.load(path+'features/ventriculo/' + file_name+'.npz')['ventriculo'].astype('float16')
             white_matter = np.load(path+'features/white_matter/' + file_name+'.npz')['white_matter'].astype('float16')
-            white_tophat = np.load(path+'features/white_tophat/' + file_name+'.npz')['white_tophat'].astype('float16')
-            #con_hem = hematoma + white_matter + ventriculo + white_tophat + blood  # combined
-           # print('aquiqqqqqqqqqqqqqqqqqq')
+            #white_tophat = np.load(path+'features/white_tophat/' + file_name+'.npz')['white_tophat'].astype('float16')
+
+            #selem = disk(2)
+            #norm='max'
+            #image = lib.read_image("../dataset/stage_1_train_images/" + file_name)  # feature hematoma, utilize hu
+            #image = skimage.morphology.dilation(image, selem)
+            #hematoma_dila = pre.normalize(lib.substance_interval(image, 30, 90), norm=norm).astype('float16')
+            #ventriculo_dila = np.load(path+'features/ventriculo/' + file_name+'.npz')['ventriculo'].astype('float16')
+            #blood_dila = pre.normalize(lib.substance_interval(image, 45, 65), norm=norm).astype('float16')
+            #white_tophat_dila = pre.normalize(skimage.morphology.white_tophat(image), norm=norm).astype('float16')
+
+
+
+
+            #con_hem = hematoma_dila + ventriculo_dila + blood
+            #con_hem = hematoma_dila + white_matter + ventriculo + white_tophat + blood  # combined
+            #print('aquiqqqqqqqqqqqqqqqqqq')
             #con_hem = snake + hematoma + white_matter + ventriculo + white_tophat + blood  # combined
             con_hem = snake + hematoma + white_matter + ventriculo + blood
+            #con_hem = np.append(snake, hematoma)
         
             if len(con_hem.flatten())!= 262144:
                 con_hem =  np.zeros(262144)
@@ -354,6 +369,7 @@ def balance_train_type(balance_files, files, amount, type_disease):
             cont+=1
         if cont >= limit:
             break
+    print(type_disease, str(cont))
 
 def balance_train_normal(balance_files, files, amount, type_disease):
     limit = (limit_train*amount)/100
@@ -368,7 +384,7 @@ def balance_train_normal(balance_files, files, amount, type_disease):
             cont+=1
         if cont >= limit:
             break
-
+    print(type_disease, str(cont))
 
 # ----------- Main
 dir_train = "../dataset/stage_1_train_images/"
@@ -390,12 +406,12 @@ iterations = 35  # method snake
 #files_train = cv.list_files(dir_train)
 #files_train = list(id_label.keys())
 print('len(files_train): ', len(files_train))
-files_test = files_train[60000:61000]
+files_test = files_train[60000:70000]
 #files_test = files_train[50:60] # local machine
 print('balanced train')
 #files_train = balance_train(files_train, 2000)
 balance_files = []
-balance_train_type(balance_files, files_train, 10, 'epidural')
+balance_train_type(balance_files, files_train, 10, 'epidural') #3
 balance_train_type(balance_files, files_train, 10, 'intraparenchymal')
 balance_train_type(balance_files, files_train, 10, 'intraventricular')
 balance_train_type(balance_files, files_train, 10, 'subarachnoid')
@@ -425,18 +441,18 @@ print('len(train): ', len(X_train), ', ', len(Y_train))
 print('len(X_test): ', len(X_test))
 print('len(Y_test): ', len(Y_test))
 
-model = KNeighborsClassifier(n_neighbors=20, n_jobs=-1)
-#model = RandomForestClassifier(n_estimators=100, random_state=SEED_RANDOM, n_jobs=-1)
-#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = [{0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 444400}, {0:1, 1:10}])
-#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = 'balanced_subsample')
+#model = KNeighborsClassifier(n_neighbors=20, n_jobs=-1)
+#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1)
+model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight = [{0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 444400}, {0:1, 1:2}])
+#model = RandomForestClassifier(n_estimators=10, random_state=SEED_RANDOM, n_jobs=-1, class_weight='balanced')
 #model = MLPClassifier()
 #model =  ExtraTreesClassifier(n_estimators=10, max_features=120, n_jobs=-1, random_state=SEED_RANDOM, class_weight = [{0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 444400}, {0:1, 1:10}])
 
 #model = DecisionTreeClassifier(random_state=SEED_RANDOM, class_weight = [{0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 100}, {0: 1, 1: 444400}, {0:1, 1:10}])
 
 # best param svm
-'''tuned_parameters = [{'n_estimators': [10,20,50,10]}]
-model = GridSearchCV(model_en, tuned_parameters, scoring='f1_macro')
+'''tuned_parameters = [{'n_estimators': [10,20,50,100]}]
+model = GridSearchCV(model, tuned_parameters, scoring='accuracy')
 model.fit(X_train, Y_train)
 best_param = model.best_params_
 print(best_param)'''
@@ -449,19 +465,19 @@ print("Time train model: %f" % (timeit.default_timer() - ini))
 # save the model to disk
 #joblib.dump(model, open(cv.name_out('./knn.model'), 'wb'))
 joblib.dump(model, open('classifier.model', 'wb'))
-'''Y_pred = model.predict(X_test)
-print('Y_pred: ', Y_pred)
+Y_pred = model.predict(X_test)
+#print('Y_pred: ', Y_pred)
 
 for y in Y_pred:
     sum=0
     for index in range(5):
         sum += y[index]
-    if sum != 0:
+    if sum > 0.3:
         y[5]=1
     else:
         y[5]=0
 
-print('Y_pred: ', Y_pred)
+#print('Y_pred: ', Y_pred)
 
 precision, recall, fscore, support = score(Y_test, Y_pred)
 print('precision: {}'.format(precision))
@@ -477,4 +493,4 @@ print('Weight f1: ', f1_score(Y_test, Y_pred, average='weighted'))
 print(multilabel_confusion_matrix(Y_test, Y_pred))
 #print(classification_report(Y_test, Y_pred))
 
-'''
+
